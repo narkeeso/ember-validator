@@ -34,8 +34,10 @@ validate() returns a results object
 
 TODO
 ----
+- Allow to return as promise (optional)
 - More built-in rules
-- Custom rules defined in validation
+- Custom rules defined in validations
 - Add value dependencies
 - More documentation
 - Tests
+- Split files up
