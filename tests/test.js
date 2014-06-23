@@ -31,7 +31,7 @@ test('Built-in required rule', function() {
 });
 
 test('Supports custom validator rule', function() {
-  expect(3);
+  expect(4);
   App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
     validations: {
       name: {
@@ -43,7 +43,8 @@ test('Supports custom validator rule', function() {
             if (obj.get('type') === 'Visa') {
               return String(value).split('').length === 3;
             }
-          }
+          },
+          message: 'invalid %@'
         }
       }
     }
@@ -57,8 +58,11 @@ test('Supports custom validator rule', function() {
 
   ok(card, 'created');
 
-  var result = card.validate().get('isValid');
+  var result = card.validate().get('isValid'),
+      messages = card.validate().get('messages');
+
   ok(!result, 'Validation should fail because cvv is 4 digits');
+  equal(messages[0], 'invalid cvv', 'Should display set message in custom validator');
 
   card.set('cvv', 944);
   result = card.validate().get('isValid');
