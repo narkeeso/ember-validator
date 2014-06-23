@@ -48,22 +48,30 @@ Em.ValidatorMixin = Ember.Mixin.create({
     Em.assert('Must have a \'validations\' object defined', validations);
     return Em.keys(validations);
   },
+
+  _getRuleObj: function(key, ruleName) {
+    var validations = this.validations,
+        Rules = Em.Validator.Rules,
+        isCustom = (typeof validations[key][ruleName].validate === 'function');
+
+    return isCustom ? validations[key][ruleName] : Rules[ruleName];
+  },
   
   _generateResults: function(rules, key) {
-    var Rules = Em.Validator.Rules,
+    var self = this,
         valueForKey = this.get(key),
         results = this.get('validationResults'),
         resultObj = Em.Validator.Result.create();
     
-    rules.forEach(function(rule) {
-      var validator = Rules[rule],
-          result = validator.validate(valueForKey);
+    rules.forEach(function(ruleName) {
+      var validator = self._getRuleObj(key, ruleName),
+          result = validator.validate(valueForKey, self);
 
       if (!result) {
         resultObj.setProperties({
           isValid: false,
           validator: validator,
-          ruleName: rule,
+          ruleName: ruleName,
           propertyName: key
         });
 
