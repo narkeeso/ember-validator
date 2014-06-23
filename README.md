@@ -26,7 +26,7 @@ var creditCard = App.CreditCard.create({
 creditCard.validate().get('isValid'); // false
 creditCard.validate().get('messages'); // ['number is required']
 
-creditCard.set('number', 4111111111111111');
+creditCard.set('number', 4111111111111111);
 creditCard.validate().get('isValid'); // true
 ```
 
