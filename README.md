@@ -7,7 +7,7 @@ Usage
 -----
 
 ```javascript
-App.CreditCard = Em.Object.extend({
+App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
   validations: {
     name: {
       required: true
@@ -18,7 +18,7 @@ App.CreditCard = Em.Object.extend({
   }
 });
 
-var creditCard = App.CreditCard.create(Em.ValidatorMixin, {
+var creditCard = App.CreditCard.create({
   name: 'Michael Narciso',
   number: null
 });
