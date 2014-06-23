@@ -1,3 +1,5 @@
+Em.Validator = {};
+
 Em.Validator.Rule = Em.Object.extend({
   message: null,
   validate: null
@@ -27,6 +29,9 @@ Em.Validator.Result = Em.Object.extend({
 });
 
 Em.Validator.Results = Em.ArrayProxy.extend({
+  content: null,
+  messages: Em.computed.mapBy('content', 'message'),
+  
   isValid: function() {
     var content = this.get('content');
     return Em.isEmpty(content) ? true : content.isEvery('isValid', true);
