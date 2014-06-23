@@ -58,6 +58,11 @@ var card = App.CreditCard.create({
   number: 4111111111111111,
   cvv: 944
 });
+
+card.validate().get('isValid'); // true
+
+card.set('cvv', 9444);
+card.validate().get('isValid') // false;
 ```
 
 Define an object inside the property name with a validate function. This custom validator checks if the object type is Visa and checks if it's length is 3. The object is also passed into the validate function so that you can access it's other properties.
@@ -71,3 +76,4 @@ TODO
 - More documentation
 - Tests
 - Split files up
+- Better messages system
