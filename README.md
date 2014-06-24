@@ -1,6 +1,8 @@
 ember-validator
 ===============
 
+[![Build Status](https://travis-ci.org/narkeeso/ember-validator.svg?branch=master)](https://travis-ci.org/narkeeso/ember-validator)
+
 A library for validating ember objects
 
 ###### Disclaimer: **such alpha**, **much risk**
