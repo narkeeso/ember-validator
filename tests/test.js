@@ -122,3 +122,28 @@ test('Supports custom validator rule', function() {
   result = card.validate().get('isValid');
   ok(result, 'Validation should succeed because cvv is 3 digits');
 });
+
+test('Only show 1 error per property', function() {
+  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+    validations: {
+      name: {
+        rules: ['required']
+      },
+      number: {
+        rules: ['required', 'number']
+      }
+    }
+  });
+
+  var card = App.CreditCard.create({
+    name: 'Michael',
+    number: null
+  });
+
+  var results = card.validate();
+  equal(results.get('messages.length'), 1, 'Should only have 1 error');
+
+  card.set('name', undefined);
+  results = card.validate();
+  equal(results.get('messages.length'), 2, 'Should only have 2 errors');
+});

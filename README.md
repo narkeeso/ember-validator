@@ -5,6 +5,10 @@ ember-validator
 
 A library for validating ember objects
 
+Goal
+----
+Create a lightweight and flexible validation library that supports complex validations with multiple property or external object dependencies.
+
 ###### Disclaimer: **such alpha**, **much risk**, currently only tested with Ember 1.5.1
 
 Usage

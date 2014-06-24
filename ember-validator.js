@@ -18,7 +18,7 @@ Em.Validator.Rules.reopenClass({
 
   number: {
     validate: function(value) {
-      return !isNaN(value);
+      return Em.typeOf(value) === 'number';
     },
 
     message: '%@ is not a number'
@@ -103,7 +103,7 @@ Em.ValidatorMixin = Ember.Mixin.create({
         results = this.get('validationResults'),
         resultObj = Em.Validator.Result.create();
     
-    rules.forEach(function(ruleName) {
+    rules.find(function(ruleName) {
       var validator = self._getRuleObj(key, ruleName);
 
       // Should only run rules on required or values that are not undefined
@@ -119,6 +119,7 @@ Em.ValidatorMixin = Ember.Mixin.create({
           });
 
           results.pushObject(resultObj);
+          return true;
         }
       }
     });
