@@ -22,6 +22,7 @@ Em.Validator.Result = Em.Object.extend({
   isValid: null,
   ruleName: null,
   validator: null,
+
   message: function() {
     var name = this.get('propertyName');
     return this.get('validator.message').fmt(name);
@@ -39,9 +40,10 @@ Em.Validator.Results = Em.ArrayProxy.extend({
 });
 
 Em.ValidatorMixin = Ember.Mixin.create({
-  validationResults: Em.Validator.Results.create({
-    content: Em.A()
-  }),
+  init: function() {
+    this._super();
+    this.set('validationResults', Em.Validator.Results.create({ content: [] }));
+  },
   
   _getValidationKeys: function() {
     var validations = this.validations;
@@ -49,12 +51,31 @@ Em.ValidatorMixin = Ember.Mixin.create({
     return Em.keys(validations);
   },
 
+  /**
+   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}
+   * @param  {String} key
+   * @param  {String} ruleName
+   * @return {Object} - The rule object
+   */
   _getRuleObj: function(key, ruleName) {
     var validations = this.validations,
-        Rules = Em.Validator.Rules,
-        isCustom = (typeof validations[key][ruleName].validate === 'function');
+        Rules = Em.Validator.Rules;
 
-    return isCustom ? validations[key][ruleName] : Rules[ruleName];
+    var customRule = validations[key][ruleName];
+
+    if (customRule) {
+      var hasValidateFunction = typeof validations[key][ruleName].validate === 'function';
+      Em.assert('Must have validate function defined in custom rule.', hasValidateFunction);
+      return customRule;
+    }
+
+    var builtIn = Rules[ruleName];
+
+    if (builtIn) {
+      return builtIn;
+    } else {
+      Em.assert('No valid rules were found.', false);
+    }
   },
   
   _generateResults: function(rules, key) {
@@ -84,11 +105,11 @@ Em.ValidatorMixin = Ember.Mixin.create({
     var self = this,
         validations = this.get('validations'),
         keys = this._getValidationKeys();
-    
+
     this.get('validationResults').clear();
     
     keys.forEach(function(key) {
-      var rulesForKey = Em.keys(self.validations[key]);
+      var rulesForKey = self.validations[key].rules;
       self._generateResults(rulesForKey, key);
     });
     
