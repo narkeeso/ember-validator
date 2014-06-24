@@ -1,5 +1,6 @@
 language: node_js
 before_script:
-- npm install testem bower
+- npm install testem -g
+- npm install bower
 - bower install
 script: testem ci
