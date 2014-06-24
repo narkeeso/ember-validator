@@ -1,19 +1,27 @@
 Em.Validator = {};
 
 Em.Validator.Rule = Em.Object.extend({
-  message: null,
-  validate: null
+  validate: null,
+  message: null
 });
 
 Em.Validator.Rules = Em.Object.extend();
 
 Em.Validator.Rules.reopenClass({
   required: {
-    validate: function(value, deps) {
+    validate: function(value) {
       return !Em.isEmpty(value);
     },
     
     message: '%@ is required'
+  },
+
+  number: {
+    validate: function(value) {
+      return !isNaN(value);
+    },
+
+    message: '%@ is not a number'
   }
 });
 
@@ -88,18 +96,22 @@ Em.ValidatorMixin = Ember.Mixin.create({
         resultObj = Em.Validator.Result.create();
     
     rules.forEach(function(ruleName) {
-      var validator = self._getRuleObj(key, ruleName),
-          result = validator.validate(valueForKey, self);
+      var validator = self._getRuleObj(key, ruleName);
 
-      if (!result) {
-        resultObj.setProperties({
-          isValid: false,
-          validator: validator,
-          ruleName: ruleName,
-          propertyName: key
-        });
+      // Should only run rules on required or values that are not undefined
+      if (ruleName === 'required' || valueForKey !== undefined) {
+        var result = validator.validate(valueForKey, self);
 
-        results.pushObject(resultObj);
+        if (!result) {
+          resultObj.setProperties({
+            isValid: false,
+            validator: validator,
+            ruleName: ruleName,
+            propertyName: key
+          });
+
+          results.pushObject(resultObj);
+        }
       }
     });
   },
