@@ -41,13 +41,18 @@ Em.Validator.Result = Em.Object.extend({
  * The array proxy which stores all the validation results
  */
 Em.Validator.Results = Em.ArrayProxy.extend({
-  content: null,
   messages: Em.computed.mapBy('content', 'message'),
+  errors: Em.computed.alias('content'),
   
+  // A valid object should have no errors
   isValid: function() {
-    var content = this.get('content');
-    return Em.isEmpty(content) ? true : content.isEvery('isValid', true);
-  }.property('content.@each')
+    return Em.isEmpty(this.get('errors'));
+  }.property('errors.@each'),
+
+  // Retrieves the error message for given error key
+  getMsgFor: function(key) {
+    return this.get('content').findBy('propertyName', key).get('message');
+  }
 });
 
 Em.ValidatorMixin = Ember.Mixin.create({
@@ -56,9 +61,13 @@ Em.ValidatorMixin = Ember.Mixin.create({
     this.set('validationResults', Em.Validator.Results.create({ content: [] }));
   },
   
-  _getValidationKeys: function() {
+  /**
+   * Gets all the property keys from defined validations object
+   * @return {Array}
+   */
+  _getValidationProperties: function() {
     var validations = this.validations;
-    Em.assert('Must have a \'validations\' object defined', validations);
+    Em.assert('You do not have a \'validations\' object defined', validations);
     return Em.keys(validations);
   },
 
@@ -132,7 +141,7 @@ Em.ValidatorMixin = Ember.Mixin.create({
   validate: function() {
     var self = this,
         validations = this.get('validations'),
-        keys = this._getValidationKeys();
+        keys = this._getValidationProperties();
 
     this.get('validationResults').clear();
     

@@ -147,3 +147,20 @@ test('Only show 1 error per property', function() {
   results = card.validate();
   equal(results.get('messages.length'), 2, 'Should only have 2 errors');
 });
+
+test('Can retrieve errors by key name', function() {
+  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+    validations: {
+      name: {
+        rules: ['required']
+      }
+    }
+  });
+
+  var card = App.CreditCard.create({
+    name: null
+  });
+
+  var results = card.validate();
+  equal(results.getMsgFor('name'), 'name is required', 'retrieve message using getMsgFor()');
+});
