@@ -72,7 +72,8 @@ TODO
 - Allow to return as promise (optional)
 - More built-in rules (In progress)
 - Custom rules defined in validations (In progress)
-- Add value dependencies
+- Add external object dependencies
+- value dependencies should be valid before run in other validations
 - More documentation
 - Tests
 - Split files up
