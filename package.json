@@ -1,0 +1,26 @@
+{
+  "name": "ember-validator",
+  "version": "0.0.0",
+  "description": "A library for validating ember objects",
+  "main": "ember-validator.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "phantomjs": "~1.9.7-10",
+    "testem": "~0.6.16"
+  },
+  "scripts": {
+    "test": "./node_modules/testem/testem.js -l PhantomJS ci"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/narkeeso/ember-validator.git"
+  },
+  "author": "Michael Narciso",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/narkeeso/ember-validator/issues"
+  }
+}
