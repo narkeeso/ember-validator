@@ -63,7 +63,8 @@ Em.ValidatorMixin = Ember.Mixin.create({
   },
 
   /**
-   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}
+   * Looks for a rule object defined as custom or defined in 
+   * {@link Em.Validator.Rules}
    * @param  {String} key
    * @param  {String} ruleName
    * @return {Object} - The rule object
@@ -75,8 +76,9 @@ Em.ValidatorMixin = Ember.Mixin.create({
     var customRule = validations[key][ruleName];
 
     if (customRule) {
-      var hasValidateFunction = typeof validations[key][ruleName].validate === 'function';
-      Em.assert('Must have validate function defined in custom rule.', hasValidateFunction);
+      var hasValidateFunction = typeof customRule.validate === 'function';
+      Em.assert('Must have validate function defined in custom rule.', 
+        hasValidateFunction);
       return customRule;
     }
 
@@ -89,6 +91,12 @@ Em.ValidatorMixin = Ember.Mixin.create({
     }
   },
   
+  /**
+   * Responsible for running validation rules and appending a result to
+   * validationResults.
+   * @param  {Array} rules - rule names defined as strings
+   * @param  {String} key - the current property being validated
+   */
   _generateResults: function(rules, key) {
     var self = this,
         valueForKey = this.get(key),
@@ -116,6 +124,10 @@ Em.ValidatorMixin = Ember.Mixin.create({
     });
   },
   
+  /**
+   * Runs all validations defined in the validations object
+   * @return {Em.ArrayProxy} - an instance of {@link Em.Validator.Results}
+   */
   validate: function() {
     var self = this,
         validations = this.get('validations'),

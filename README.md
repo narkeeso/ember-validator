@@ -5,7 +5,7 @@ ember-validator
 
 A library for validating ember objects
 
-###### Disclaimer: **such alpha**, **much risk**
+###### Disclaimer: **such alpha**, **much risk**, currently only tested with Ember 1.5.1
 
 Usage
 -----
@@ -82,3 +82,4 @@ TODO
 - More documentation
 - Split files up
 - Better messages system
+- Test with older Ember versions, 1.0+
