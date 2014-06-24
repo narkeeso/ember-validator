@@ -29,6 +29,9 @@ Em.Validator.Result = Em.Object.extend({
   }.property('validator')
 });
 
+/**
+ * The array proxy which stores all the validation results
+ */
 Em.Validator.Results = Em.ArrayProxy.extend({
   content: null,
   messages: Em.computed.mapBy('content', 'message'),
