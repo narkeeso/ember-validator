@@ -1,7 +1,5 @@
 language: node_js
 before_script:
-- npm install testem bower phantomjs
+- npm install testem bower
 - bower install
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
 script: testem ci
