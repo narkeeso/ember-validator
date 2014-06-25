@@ -193,3 +193,32 @@ test('Supports message sending additional message formats', function() {
   var results = card.validate();
   equal(results.getMsgFor('name'), 'name is over maximum of 10 characters', 'should display formatted string');
 });
+
+test('Supports setting your own property name for message formatting', function() {
+  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+    validations: {
+      name: {
+        rules: ['required', 'maxLength'],
+        maxLength: {
+          max: 10,
+          message: '%@1 is over %@2 of %@3 characters',
+          propertyFmt: 'full name',
+
+          validate: function(value, options) {
+            if (String(value).split('').length > options.max) {
+              this.msgFmt = ['maximum', options.max];
+              return false;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  var card = App.CreditCard.create({
+    name: 'Michael Narciso'
+  });
+
+  var results = card.validate();
+  equal(results.getMsgFor('name'), 'full name is over maximum of 10 characters', 'should display formatted string');
+});

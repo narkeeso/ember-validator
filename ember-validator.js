@@ -12,8 +12,15 @@ Em.Validator.Rule = Em.Object.extend({
   /** 
    * You can add string replacements here, the first argument will always be
    * the property name being validated
+   * @type {Array}
    */
   msgFmt: [],
+
+  /**
+   * You can override the default property name here for message formatting
+   * @type {String}
+   */
+  propertyFmt: null,
 
   /**
    * A rule can return a message with string formatting
@@ -32,6 +39,8 @@ Em.Validator.Rule = Em.Object.extend({
    * message = '%@2 of %@3 characters required'
    * ```
    * Validation message will be 'minimum of 6 characters required'
+   *
+   * @type {String}
    */
   message: null,
 
@@ -42,7 +51,7 @@ Em.Validator.Rule = Em.Object.extend({
    * @return {Boolean} 
    */
   validate: function() {
-    Em.assert('You must override validate for this to be a valid rule', false);
+    Em.assert('You must define a validate function for this to be a valid rule', false);
   }
 });
 
@@ -73,11 +82,36 @@ Em.Validator.Result = Em.Object.extend({
   ruleName: null,
   validator: null,
 
+  /**
+   * Formats the message based on the propertyName and message args.
+   * The propertyName is always set as the first argument
+   * 
+   * @param  {String} propertyName
+   * @param  {Array} msgFmt
+   * @return {String}
+   */
+  _formatMessage: function(propertyName, msgFmt) {
+    var formats = [];
+
+    formats = formats.concat(msgFmt);
+    formats.unshift(propertyName);
+
+    return Em.String.fmt(this.get('validator.message'), formats);
+  },
+
+  /**
+   * Checks if a property name override exists in validator.propertyFmt
+   * before sending to {@link Em.Validator.Result._formatMessage}
+   * 
+   * @return {String} the formatted message
+   */
   message: function() {
-    var format = [];
-    format = format.concat(this.get('validator.msgFmt'));
-    format.unshift(this.get('propertyName'));
-    return Em.String.fmt(this.get('validator.message'), format);
+    var validator = this.get('validator');
+        propertyFmt = validator.get('propertyFmt'),
+        msgArgs = this.get('validator.msgFmt'),
+        propertyName = propertyFmt ? propertyFmt : this.get('propertyName');
+
+    return this._formatMessage(propertyName, msgArgs);
   }.property('validator')
 });
 
