@@ -9,19 +9,53 @@ if (Ember.libraries) {
 }
 
 Em.Validator.Rule = Em.Object.extend({
-  validate: null,
-  message: null
+  /** 
+   * You can add string replacements here, the first argument will always be
+   * the property name being validated
+   */
+  msgFmt: [],
+
+  /**
+   * A rule can return a message with string formatting
+   * 
+   * USAGE: 
+   * ```
+   * propertyName = 'name';
+   * message = '%@1 is required';
+   * ```
+   * Validation message will be 'name is required'
+   * The property being validated is always the first string argument
+   *
+   * USAGE:
+   * ```
+   * msgFmt = ['minimum', 6]
+   * message = '%@2 of %@3 characters required'
+   * ```
+   * Validation message will be 'minimum of 6 characters required'
+   */
+  message: null,
+
+  /**
+   * The object 
+   * @param {*} value - The property value to validate
+   * @param {Object} options - The object validator with an object context included
+   * @return {Boolean} 
+   */
+  validate: function() {
+    Em.assert('You must override validate for this to be a valid rule', false);
+  }
 });
 
-Em.Validator.Rules = Em.Object.extend();
-
-Em.Validator.Rules.reopenClass({
+/**
+ * Built-in rules definitions, all rules are generated as {@link Em.Validator.Rule}
+ */
+Em.Validator.Rules = {
   required: {
     validate: function(value) {
       return !Em.isEmpty(value);
     },
     
-    message: '%@ is required'
+    message: '%@1 is required'
   },
 
   number: {
@@ -29,9 +63,9 @@ Em.Validator.Rules.reopenClass({
       return Em.typeOf(value) === 'number';
     },
 
-    message: '%@ is not a number'
+    message: '%@1 is not a number'
   }
-});
+};
 
 Em.Validator.Result = Em.Object.extend({
   propertyName: null,
@@ -40,8 +74,10 @@ Em.Validator.Result = Em.Object.extend({
   validator: null,
 
   message: function() {
-    var name = this.get('propertyName');
-    return this.get('validator.message').fmt(name);
+    var format = [];
+    format = format.concat(this.get('validator.msgFmt'));
+    format.unshift(this.get('propertyName'));
+    return Em.String.fmt(this.get('validator.message'), format);
   }.property('validator')
 });
 
@@ -81,29 +117,31 @@ Em.ValidatorMixin = Ember.Mixin.create({
   },
 
   /**
-   * Looks for a rule object defined as custom or defined in 
-   * {@link Em.Validator.Rules}
+   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
+   * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
+   * 
    * @param  {String} key
    * @param  {String} ruleName
    * @return {Object} - The rule object
    */
   _getRuleObj: function(key, ruleName) {
     var validations = this.validations,
-        Rules = Em.Validator.Rules;
-
-    var customRule = validations[key][ruleName];
+        Rules = Em.Validator.Rules,
+        customRule = validations[key][ruleName],
+        builtInRule = Rules[ruleName];
 
     if (customRule) {
-      var hasValidateFunction = typeof customRule.validate === 'function';
+      var rule = builtInRule ? Em.merge(builtInRule, customRule) : customRule,
+          hasValidateMethod = typeof rule.validate === 'function';
+
       Em.assert('Must have validate function defined in custom rule.', 
-        hasValidateFunction);
-      return customRule;
+        hasValidateMethod);
+
+      return Em.Validator.Rule.create(rule);
     }
 
-    var builtIn = Rules[ruleName];
-
-    if (builtIn) {
-      return builtIn;
+    if (builtInRule) {
+      return Em.Validator.Rule.create(builtInRule);
     } else {
       Em.assert('No valid rules were found.', false);
     }
@@ -125,7 +163,11 @@ Em.ValidatorMixin = Ember.Mixin.create({
 
       // Should only run rules on required or values that are not undefined
       if (ruleName === 'required' || valueForKey !== undefined) {
-        var didValidate = validator.validate(valueForKey, self);
+        // Build options to pass to validate
+        var options = validator;
+        options.context = self;
+
+        var didValidate = validator.validate(valueForKey, options);
 
         if (!didValidate) {
           var result = Em.Validator.Result.create({
@@ -141,6 +183,19 @@ Em.ValidatorMixin = Ember.Mixin.create({
       }
     });
   },
+
+  _getRulesForKey: function(key) {
+    var property = this.validations[key];
+
+    if (Em.typeOf(property) === 'array') {
+      return property;
+    } else if (Em.typeOf(property.rules) === 'array') {
+      return property.rules;
+    } else {
+      Em.Logger.warn('No valid defined rules found for property \'' + key + '\'');
+      return [];
+    }
+  },
   
   /**
    * Runs all validations defined in the validations object
@@ -154,8 +209,8 @@ Em.ValidatorMixin = Ember.Mixin.create({
     this.get('validationResults').clear();
     
     keys.forEach(function(key) {
-      var rulesForKey = self.validations[key].rules;
-      self._generateResult(rulesForKey, key);
+      var rules = self._getRulesForKey(key);
+      self._generateResult(rules, key);
     });
     
     return this.get('validationResults');

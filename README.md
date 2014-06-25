@@ -141,12 +141,12 @@ Em.Handlebars.helper('error-msg', function(key, options) {
 TODO
 ----
 - Allow to return as promise (optional)
-- More built-in rules (In progress)
-- Custom rules defined in validations (In progress)
 - Add external object dependencies
-- value dependencies should be valid before run in other validations
-- More documentation
-- Split files up
-- Better messages system
+- Value dependencies should be valid before run in other validations
+- Better documentation on usage
+- Split development files up if needed
 - Test with older Ember versions, 1.0+
-- Register as an ember library
+
+Thanks
+------
+Development made possible by [ChowNow Inc](https://www.chownow.com). The library was created to handle ChowNow's need for a flexible and custom validator library.

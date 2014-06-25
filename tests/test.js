@@ -93,8 +93,10 @@ test('Supports custom validator rule', function() {
       cvv: {
         rules: ['required', 'cvvLength'],
         cvvLength: {
-          validate: function(value, obj) {
-            if (obj.get('type') === 'Visa') {
+          validate: function(value, options) {
+            var type = options.context.get('type');
+
+            if (type === 'Visa') {
               return value.split('').length === 3;
             }
           },
@@ -163,4 +165,31 @@ test('Can retrieve errors by key name', function() {
 
   var results = card.validate();
   equal(results.getMsgFor('name'), 'name is required', 'retrieve message using getMsgFor()');
+});
+
+test('Supports message sending additional message formats', function() {
+  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+    validations: {
+      name: {
+        rules: ['required', 'maxLength'],
+        maxLength: {
+          max: 10,
+          message: '%@1 is over %@2 of %@3 characters',
+          validate: function(value, options) {
+            if (String(value).split('').length > options.max) {
+              this.msgFmt = ['maximum', options.max];
+              return false;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  var card = App.CreditCard.create({
+    name: 'Michael Narciso'
+  });
+
+  var results = card.validate();
+  equal(results.getMsgFor('name'), 'name is over maximum of 10 characters', 'should display formatted string');
 });
