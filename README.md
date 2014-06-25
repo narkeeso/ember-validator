@@ -1,10 +1,5 @@
 [![Build Status](https://travis-ci.org/narkeeso/ember-validator.svg?branch=master)](https://travis-ci.org/narkeeso/ember-validator)
 
-ember-validator
-===============
-
-A library for validating ember objects
-
 Goal
 ----
 Create a lightweight and flexible validation library that supports complex validations with multiple property dependencies. Ideal for developers that want to write their own validations and choose how to implement how errors are displayed in the view.
