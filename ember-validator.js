@@ -1,4 +1,12 @@
+(function() {
+  
 Em.Validator = {};
+
+var VERSION = '0.0.1';
+
+if (Ember.libraries) {
+  Ember.libraries.register('Ember Validator', VERSION);
+}
 
 Em.Validator.Rule = Em.Object.extend({
   validate: null,
@@ -51,7 +59,8 @@ Em.Validator.Results = Em.ArrayProxy.extend({
 
   // Retrieves the error message for given error key
   getMsgFor: function(key) {
-    return this.get('content').findBy('propertyName', key).get('message');
+    var property = this.get('errors').findBy('propertyName', key);
+    return property ? property.get('message') : null;
   }
 });
 
@@ -106,28 +115,27 @@ Em.ValidatorMixin = Ember.Mixin.create({
    * @param  {Array} rules - rule names defined as strings
    * @param  {String} key - the current property being validated
    */
-  _generateResults: function(rules, key) {
+  _generateResult: function(rules, key) {
     var self = this,
         valueForKey = this.get(key),
-        results = this.get('validationResults'),
-        resultObj = Em.Validator.Result.create();
+        results = this.get('validationResults');
     
     rules.find(function(ruleName) {
       var validator = self._getRuleObj(key, ruleName);
 
       // Should only run rules on required or values that are not undefined
       if (ruleName === 'required' || valueForKey !== undefined) {
-        var result = validator.validate(valueForKey, self);
+        var didValidate = validator.validate(valueForKey, self);
 
-        if (!result) {
-          resultObj.setProperties({
+        if (!didValidate) {
+          var result = Em.Validator.Result.create({
             isValid: false,
             validator: validator,
             ruleName: ruleName,
             propertyName: key
           });
 
-          results.pushObject(resultObj);
+          results.pushObject(result);
           return true;
         }
       }
@@ -147,9 +155,11 @@ Em.ValidatorMixin = Ember.Mixin.create({
     
     keys.forEach(function(key) {
       var rulesForKey = self.validations[key].rules;
-      self._generateResults(rulesForKey, key);
+      self._generateResult(rulesForKey, key);
     });
     
     return this.get('validationResults');
   }
 });
+
+})();
