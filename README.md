@@ -149,3 +149,4 @@ TODO
 - Split files up
 - Better messages system
 - Test with older Ember versions, 1.0+
+- Register as an ember library
