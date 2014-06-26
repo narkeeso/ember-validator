@@ -46,9 +46,14 @@ App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
     cvv: {
       rules: ['required', 'cvvLength']
       cvvLength: {
-        validate: function(value, obj) {
-          if (obj.get('type') === 'Visa') {
-            return value.split('').length === 3;
+        message: '%@1 invalid, %@2 requires %@3-digits',
+        validate: function(value, options) {
+          var context = options.context;
+              type = context.get('type');
+
+          if (type === 'Visa') {
+            this.msgFmt = [type, 3];
+            return String(value).split('').length === 3;
           }
         }
       }
@@ -67,6 +72,9 @@ card.validate().get('isValid'); // true
 
 card.set('cvv', '9444');
 card.validate().get('isValid') // false;
+
+// Supports custom message formatting
+card.validate().getMsgFor('cvv'); // 'cvv invalid, Visa requires 3-digits'
 ```
 
 Define an object inside the property name with a validate function. This custom validator checks if the object type is Visa and checks if it's length is 3. The object is also passed into the validate function so that you can access it's other properties.
