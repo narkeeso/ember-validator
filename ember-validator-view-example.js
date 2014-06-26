@@ -63,20 +63,43 @@ Em.ValidatorErrorView = Em.View.extend({
     return context.get('validationResults');
   },
 
-  // Looks for a validationResults object in errorKey
+  /**
+   * Given example: 'customer.billing.card.number' as the key
+   * 
+   * Loops through the key to find a validation object starting from the bottom
+   * If the key is 'customer.billing.card.number' the parser will generate an array
+   * removing one key at a time until a results object is found.
+   *
+   * The first reduce method creates an object traversal array as follows:
+   * ['customer.billing.card', 'customer.billing', 'customer']
+   *
+   * That array is passed to the find method to attempt the retieval of
+   * the validationResults object.
+   * 
+   * @return {Em.Object} validationResults object if found
+   */
   _parseKeyForResults: function() {
-    var keyName = this.get('keyName'),
-        properties = keyName.split('.');
+    var context = this.get('context'),
+        keyName = this.get('keyName'),
+        keys = keyName.split('.');
 
-    // If chained properties, there is a good chance validationResults
-    // is set on the first property.
-    if (properties.length > 1) {
-      var context = this.get('context');
-      return context.get(properties[0]).get('validationResults');
+    if (keys.length > 1) {
+      var objectNames = keys.reduce(function(array, key, idx) {
+        idx = (keys.length - 1) - idx;
+        sliced = keys.slice(0, idx);
+        array.push(sliced.join('.'));
+        return array;
+      }, []);
+
+      var resultsKey = objectNames.find(function(objectName) {
+        var object = context.get(objectName);
+        return object.get('validationResults');
+      });
+
+      return resultsKey ? context.get(resultsKey).get('validationResults') : undefined;
     }
   },
 
-  // errorKey returns a property from an object chain
   errorKey: function() {
     var keyNames = this.get('keyName').split('.');
     return keyNames[keyNames.length - 1];
@@ -86,13 +109,14 @@ Em.ValidatorErrorView = Em.View.extend({
     this._setResultsObject();
   },
 
-  message: function() {
-    var results = this.get('results');
+  willDestroyElement: function() {
+    this.get('results').clear();
+  },
 
-    if (!Em.isEmpty(results)) {
-      return results.getMsgFor(this.get('errorKey'));
-    } else {
-      return null;
-    }
+  message: function() {
+    var results = this.get('results'),
+        errorKey = this.get('errorKey');
+
+    return !Em.isEmpty(results) ? results.getMsgFor(errorKey) : null;
   }.property('results.@each.message')
 });
