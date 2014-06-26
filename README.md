@@ -115,7 +115,7 @@ App.ValidatorErrorView = Em.View.extend({
  * @param  {Object} options
  */
 Em.Handlebars.helper('error-msg', function(key, options) {
-  var context = options.data.keywords.controller,
+  var context = options.contexts[0],
       results = context ? context.get('validationResults') : undefined;
 
   // If validationResults was not found on the context, check the key

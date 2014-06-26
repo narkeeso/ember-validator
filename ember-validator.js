@@ -162,10 +162,10 @@ Em.ValidatorMixin = Ember.Mixin.create({
     var validations = this.validations,
         Rules = Em.Validator.Rules,
         customRule = validations[key][ruleName],
-        builtInRule = Rules[ruleName];
+        builtInRuleCopy = Em.copy(Rules[ruleName]);
 
     if (customRule) {
-      var rule = builtInRule ? Em.merge(builtInRule, customRule) : customRule,
+      var rule = builtInRuleCopy ? Em.merge(builtInRuleCopy, customRule) : customRule,
           hasValidateMethod = typeof rule.validate === 'function';
 
       Em.assert('Must have validate function defined in custom rule.', 
@@ -174,8 +174,8 @@ Em.ValidatorMixin = Ember.Mixin.create({
       return Em.Validator.Rule.create(rule);
     }
 
-    if (builtInRule) {
-      return Em.Validator.Rule.create(builtInRule);
+    if (builtInRuleCopy) {
+      return Em.Validator.Rule.create(builtInRuleCopy);
     } else {
       Em.assert('No valid rules were found.', false);
     }
