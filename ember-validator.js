@@ -69,7 +69,7 @@ Em.Validator.Rules = {
 
   number: {
     validate: function(value) {
-      return Em.typeOf(value) === 'number';
+      return !isNaN(parseInt(value, 10));
     },
 
     message: '%@1 is not a number'
@@ -235,10 +235,10 @@ Em.ValidatorMixin = Ember.Mixin.create({
    * Runs all validations defined in the validations object
    * @return {Em.ArrayProxy} - an instance of {@link Em.Validator.Results}
    */
-  validate: function() {
+  validate: function(keys) {
     var self = this,
         validations = this.get('validations'),
-        keys = this._getValidationProperties();
+        keys = keys ? [keys] : this._getValidationProperties();
 
     this.get('validationResults').clear();
     
