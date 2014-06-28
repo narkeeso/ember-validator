@@ -76,7 +76,7 @@ test('Only validate undefined properties on required rule', function() {
     }
   });
 
-  var card = App.CreditCard.create({
+  card = App.CreditCard.create({
     name: 'Michael'
   });
 
