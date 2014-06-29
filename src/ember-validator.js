@@ -1,6 +1,4 @@
 (function() {
-  
-Ember.Validator = {};
 
 var VERSION = '0.0.1';
 
@@ -9,10 +7,17 @@ if (Ember.libraries) {
 }
 
 /**
+ * @module Ember.Validator
+ * @extends Ember.Object
+ */
+Ember.Validator = Ember.Object.extend();
+
+/**
  * The base rule class which stores the validate method and message settings.
  *
- * @class Ember.Validator.Rule
- * @extends {Ember.Object}
+ * @namespace Validator
+ * @class Rule
+ * @extends Ember.Object
  */
 Ember.Validator.Rule = Ember.Object.extend({
   /** 
@@ -24,40 +29,45 @@ Ember.Validator.Rule = Ember.Object.extend({
   messageFormats: [],
 
   /**
-   * You can override the default property name here for message formatting
-   * @type {String}
+   * Set this property when you want to customize the message to show something
+   * other than the default errorKey.
+   * 
+   * See: {{#crossLink "Ember.Validator.Result/errorKey:property"}}errorKey{{/crossLink}}
+   * 
+   * @property propertyFormat
+   * @type string
    */
   propertyFormat: null,
 
   /**
-   * A rule can return a message with string formatting
+   * The property used to display the error message. Can be set to a customized
+   * message with formatting or without.
    * 
-   * USAGE: 
-   * ```
-   * propertyName = 'name';
-   * message = '%@1 is required';
-   * ```
-   * Validation message will be 'name is required'
-   * The property being validated is always the first string argument
+   * message is formatted like so:
+   * 
+   * @example
+   *  ```
+   *  // %@1: errorKey || propertyFormat
+   *  // %@2+: messageFormats
+   * 
+   *  '%@1 has invalid length, must be %@2 %@3 chars'.fmt(errorKey, messageFormats);
+   *  ```
+   * errorKey is defaulted to %@1 and messageFormats are designated for %@2+
+   * 
+   * Related: {{#crossLink "Validator.Result/errorKey:property"}}{{/crossLink}}
    *
-   * USAGE:
-   * ```
-   * messageFormats = ['minimum', 6]
-   * message = '%@2 of %@3 characters required'
-   * ```
-   * Validation message will be 'minimum of 6 characters required'
-   *
-   * @type {String}
+   * @property message
+   * @uses messageFormats
+   * @type string
    */
   message: null,
 
   /**
-   * The object 
+   * Define validations in this method and return the Boolean value.
    * 
    * @method validate
    * @param {*} value - The property value to validate
    * @param {Object} options - The object validator with an object context included
-   * 
    * @return {Boolean} 
    */
   validate: function() {
@@ -66,9 +76,14 @@ Ember.Validator.Rule = Ember.Object.extend({
 });
 
 /**
- * Built-in rules definitions, all rules are generated as {@link Em.Validator.Rule}
+ * Where Validator.Rule objects are defined for re-use
+ * 
+ * Related: {{#crossLink "Validator.Rule"}}{{/crossLink}}
+ * 
+ * @class Rules
+ * @namespace Validator
  */
-Em.Validator.Rules = {
+Ember.Validator.Rules = {
   required: {
     validate: function(value) {
       return !Em.isEmpty(value);
@@ -86,72 +101,181 @@ Em.Validator.Rules = {
   }
 };
 
-Em.Validator.Result = Em.Object.extend({
-  propertyName: null,
+/**
+ * Validation result object used to store the validation.
+ *
+ * @class Result
+ * @namespace Validator
+ * @extends Ember.Object
+ */
+Ember.Validator.Result = Ember.Object.extend({
+  /**
+   * @property errorKey
+   * @type string
+   */
+  errorKey: null,
+  
+  /**
+   * @property isValid
+   * @type boolean
+   */
   isValid: null,
+  
+  /**
+   * @property ruleName
+   * @type string
+   */
   ruleName: null,
-  validator: null,
+  
+  /**
+   * The object being validated is set when a result is generated
+   *
+   * @private
+   * @property _validator
+   * @type Object
+   */
+  _validator: null,
 
   /**
-   * Formats the message based on the propertyName and message args.
-   * The propertyName is always set as the first argument
+   * Formats the message based on the errorKey and messageFormats.
+   * The errorKey is always set as the first argument
    * 
-   * @param  {String} propertyName
+   * Related:
+   * {{#crossLink "Validator.Rule/propertyFormat:property"}}{{/crossLink}},
+   * {{#crossLink "Validator.Rule/messageFormats:property"}}{{/crossLink}}
+   * 
+   * @private
+   * @method _formatMessage
+   * @param  {String} propertyFormat
    * @param  {Array} messageFormats
-   * @return {String}
+   * @return {String} The formatted string
    */
-  _formatMessage: function(propertyName, messageFormats) {
+  _formatMessage: function(propertyFormat, messageFormats) {
     var formats = [];
 
     formats = formats.concat(messageFormats);
-    formats.unshift(propertyName);
+    formats.unshift(propertyFormat);
 
-    return Em.String.fmt(this.get('validator.message'), formats);
+    return Em.String.fmt(this.get('_validator.message'), formats);
   },
 
   /**
-   * Checks if a property name override exists in validator.propertyFormat
-   * before sending to {@link Em.Validator.Result._formatMessage}
+   * Computed property that formats the error message. Uses propertyFormat
+   * and messageFormats for customization.
    * 
-   * @return {String} the formatted message
+   * Related:
+   * {{#crossLink "Validator.Rule/propertyFormat:property"}}{{/crossLink}},
+   * {{#crossLink "Validator.Rule/messageFormats:property"}}{{/crossLink}}
+   * 
+   * @property message
+   * @type {String}
    */
   message: function() {
-    var validator = this.get('validator');
-        propertyFormat = validator.get('propertyFormat'),
-        msgArgs = this.get('validator.messageFormats'),
-        propertyName = propertyFormat ? propertyFormat : this.get('propertyName');
+    var _validator = this.get('_validator');
+        propertyFormat = _validator.get('propertyFormat'),
+        messageFormats = _validator.get('messageFormats'),
+        propertyFormat = propertyFormat ? propertyFormat : this.get('errorKey');
 
-    return this._formatMessage(propertyName, msgArgs);
-  }.property('validator')
+    return this._formatMessage(propertyFormat, messageFormats);
+  }.property('_validator')
 });
 
 /**
  * The array proxy which stores all the validation results
+ * 
+ * @class Results
+ * @namespace Validator
+ * @extends Ember.ArrayProxy
  */
-Em.Validator.Results = Em.ArrayProxy.extend({
+Ember.Validator.Results = Ember.ArrayProxy.extend({
+  /**
+   * An array of all the error messages generated
+   * 
+   * @property messages
+   * @type {Array}
+   */
   messages: Em.computed.mapBy('content', 'message'),
+  
+  /**
+   * An alias for the content property set on results which stores
+   * Ember.Validator.Result objects
+   * 
+   * @property errors
+   * @type {Array}
+   */
   errors: Em.computed.alias('content'),
   
-  // A valid object should have no errors
+  /**
+   * Set to false if any errors were generated in the validation
+   * 
+   * @property isValid
+   * @type {Boolean}
+   */
   isValid: function() {
     return Em.isEmpty(this.get('errors'));
   }.property('errors.@each'),
-
-  // Retrieves the error message for given error key
-  getMsgFor: function(key) {
-    var property = this.get('errors').findBy('propertyName', key);
+  
+  /**
+   * Retrieves the error message for given errorKey.
+   * 
+   * @method getMsgFor
+   * @param {String} errorKey
+   * @return {String}
+   */
+  getMsgFor: function(errorKey) {
+    var property = this.get('errors').findBy('errorKey', errorKey);
     return property ? property.get('message') : null;
   }
 });
 
-Em.ValidatorMixin = Ember.Mixin.create({
+/**
+ * Add this mixin to any object to add validation support. Exposes the validate()
+ * method which looks for a validations object.
+ * 
+ * @class Support
+ * @namespace Validator
+ * @type {Ember.Mixin}
+ */
+Ember.Validator.Support = Ember.Mixin.create({
   init: function() {
     this._super();
     this.set('validationResults', Em.Validator.Results.create({ content: [] }));
   },
   
   /**
+   * The property where validations are defined.
+   * 
+   * @example
+   * ```javascript
+   * App.Person = Ember.Object.extend(Ember.Validator.Support, {
+   *  name: null,
+   *  phone: null,
+   * 
+   *  validations: {
+   *    name: {
+   *      rules: ['required']
+   *    },
+   *    phone: {
+   *       rules: ['required', 'phone']
+   *       phone: function(value, options) {
+   *         // run validations
+   *       }
+   *    }
+   *  }
+   * });
+   * ```
+   * 
+   * @property validations
+   * @required
+   * @type {Object}
+   */
+  validations: null,
+  
+  /**
    * Gets all the property keys from defined validations object
+   * 
+   * @private
+   * @method _getValidationProperties
    * @return {Array}
    */
   _getValidationProperties: function() {
@@ -164,6 +288,8 @@ Em.ValidatorMixin = Ember.Mixin.create({
    * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
    * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
    * 
+   * @private
+   * @method _getRuleObj
    * @param  {String} key
    * @param  {String} ruleName
    * @return {Object} - The rule object
@@ -194,6 +320,9 @@ Em.ValidatorMixin = Ember.Mixin.create({
   /**
    * Responsible for running validation rules and appending a result to
    * validationResults.
+   * 
+   * @private
+   * @method _generateResult
    * @param  {Array} rules - rule names defined as strings
    * @param  {String} key - the current property being validated
    */
@@ -217,9 +346,9 @@ Em.ValidatorMixin = Ember.Mixin.create({
         if (!didValidate) {
           var result = Em.Validator.Result.create({
             isValid: false,
-            validator: validator,
+            _validator: validator,
             ruleName: ruleName,
-            propertyName: key
+            errorKey: key
           });
 
           results.pushObject(result);
@@ -229,6 +358,13 @@ Em.ValidatorMixin = Ember.Mixin.create({
     });
   },
 
+  /**
+   * Looks for rules property in the errorKey set in validations
+   *
+   * @private
+   * @method _getRulesForKey
+   * @param {String} key
+   */
   _getRulesForKey: function(key) {
     var property = this.validations[key];
 
@@ -243,13 +379,33 @@ Em.ValidatorMixin = Ember.Mixin.create({
   },
   
   /**
-   * Runs all validations defined in the validations object
-   * @return {Em.ArrayProxy} - an instance of {@link Em.Validator.Results}
+   * Runs all validations defined in the validations object and stores results.
+   * The method returns a results object.
+   * 
+   * @example Getting the validation
+   * ```
+   * var person = App.Person.create({ name: null });
+   * 
+   * person.validate().get('isValid') // false;;
+   * ```
+   * 
+   * @example Getting the error message
+   * ```
+   * person.validate().getMsgFor('name'); // 'name is required'
+   * ```
+   * 
+   * @method validate
+   * @return {Ember.Validator.Results} an instance of Validator.Results
+   * 
+   * Related:
+   * {{#crossLink "Validator.Results"}}{{/crossLink}},
+   * {{#crossLink "Validator.Support/validations:property"}}{{/crossLink}}
    */
   validate: function(keys) {
     var self = this,
-        validations = this.get('validations'),
-        keys = keys ? [keys] : this._getValidationProperties();
+        validations = this.get('validations');
+        
+    keys = keys ? [keys] : this._getValidationProperties();
 
     this.get('validationResults').clear();
     

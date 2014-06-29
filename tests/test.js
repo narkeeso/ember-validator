@@ -1,7 +1,7 @@
 var App = {};
 
 test('Built-in required rule', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required']
@@ -27,7 +27,7 @@ test('Built-in required rule', function() {
 });
 
 test('Built-in number rule', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       balance: {
         rules: ['number']
@@ -46,7 +46,7 @@ test('Built-in number rule', function() {
 });
 
 test('Only validate undefined properties on required rule', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required']
@@ -85,7 +85,7 @@ test('Only validate undefined properties on required rule', function() {
 });
 
 test('Supports custom validator rule', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required']
@@ -126,7 +126,7 @@ test('Supports custom validator rule', function() {
 });
 
 test('Only show 1 error per property', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required']
@@ -151,7 +151,7 @@ test('Only show 1 error per property', function() {
 });
 
 test('Can retrieve errors by key name', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required']
@@ -168,7 +168,7 @@ test('Can retrieve errors by key name', function() {
 });
 
 test('Supports message sending additional message formats', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required', 'maxLength'],
@@ -195,7 +195,7 @@ test('Supports message sending additional message formats', function() {
 });
 
 test('Supports setting your own property name for message formatting', function() {
-  App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required', 'maxLength'],
