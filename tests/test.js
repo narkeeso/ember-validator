@@ -177,7 +177,7 @@ test('Supports message sending additional message formats', function() {
           message: '%@1 is over %@2 of %@3 characters',
           validate: function(value, options) {
             if (String(value).split('').length > options.max) {
-              this.msgFmt = ['maximum', options.max];
+              this.messageFormats = ['maximum', options.max];
               return false;
             }
           }
@@ -202,11 +202,11 @@ test('Supports setting your own property name for message formatting', function(
         maxLength: {
           max: 10,
           message: '%@1 is over %@2 of %@3 characters',
-          propertyFmt: 'full name',
+          propertyFormat: 'full name',
 
           validate: function(value, options) {
             if (String(value).split('').length > options.max) {
-              this.msgFmt = ['maximum', options.max];
+              this.messageFormats = ['maximum', options.max];
               return false;
             }
           }

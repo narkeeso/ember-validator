@@ -1,6 +1,6 @@
 (function() {
   
-Em.Validator = {};
+Ember.Validator = {};
 
 var VERSION = '0.0.1';
 
@@ -8,19 +8,26 @@ if (Ember.libraries) {
   Ember.libraries.register('Ember Validator', VERSION);
 }
 
-Em.Validator.Rule = Em.Object.extend({
+/**
+ * The base rule class which stores the validate method and message settings.
+ *
+ * @class Ember.Validator.Rule
+ * @extends {Ember.Object}
+ */
+Ember.Validator.Rule = Ember.Object.extend({
   /** 
-   * You can add string replacements here, the first argument will always be
-   * the property name being validated
-   * @type {Array}
+   * Property used to customize the message formatting
+   * 
+   * @property messageFormats
+   * @type array
    */
-  msgFmt: [],
+  messageFormats: [],
 
   /**
    * You can override the default property name here for message formatting
    * @type {String}
    */
-  propertyFmt: null,
+  propertyFormat: null,
 
   /**
    * A rule can return a message with string formatting
@@ -35,7 +42,7 @@ Em.Validator.Rule = Em.Object.extend({
    *
    * USAGE:
    * ```
-   * msgFmt = ['minimum', 6]
+   * messageFormats = ['minimum', 6]
    * message = '%@2 of %@3 characters required'
    * ```
    * Validation message will be 'minimum of 6 characters required'
@@ -46,8 +53,11 @@ Em.Validator.Rule = Em.Object.extend({
 
   /**
    * The object 
+   * 
+   * @method validate
    * @param {*} value - The property value to validate
    * @param {Object} options - The object validator with an object context included
+   * 
    * @return {Boolean} 
    */
   validate: function() {
@@ -87,29 +97,29 @@ Em.Validator.Result = Em.Object.extend({
    * The propertyName is always set as the first argument
    * 
    * @param  {String} propertyName
-   * @param  {Array} msgFmt
+   * @param  {Array} messageFormats
    * @return {String}
    */
-  _formatMessage: function(propertyName, msgFmt) {
+  _formatMessage: function(propertyName, messageFormats) {
     var formats = [];
 
-    formats = formats.concat(msgFmt);
+    formats = formats.concat(messageFormats);
     formats.unshift(propertyName);
 
     return Em.String.fmt(this.get('validator.message'), formats);
   },
 
   /**
-   * Checks if a property name override exists in validator.propertyFmt
+   * Checks if a property name override exists in validator.propertyFormat
    * before sending to {@link Em.Validator.Result._formatMessage}
    * 
    * @return {String} the formatted message
    */
   message: function() {
     var validator = this.get('validator');
-        propertyFmt = validator.get('propertyFmt'),
-        msgArgs = this.get('validator.msgFmt'),
-        propertyName = propertyFmt ? propertyFmt : this.get('propertyName');
+        propertyFormat = validator.get('propertyFormat'),
+        msgArgs = this.get('validator.messageFormats'),
+        propertyName = propertyFormat ? propertyFormat : this.get('propertyName');
 
     return this._formatMessage(propertyName, msgArgs);
   }.property('validator')
@@ -199,6 +209,7 @@ Em.ValidatorMixin = Ember.Mixin.create({
       if (ruleName === 'required' || valueForKey !== undefined) {
         // Build options to pass to validate
         var options = validator;
+
         options.context = self;
 
         var didValidate = validator.validate(valueForKey, options);

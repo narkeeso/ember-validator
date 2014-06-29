@@ -1,6 +1,6 @@
 {
   "name": "ember-validator",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A library for validating ember objects",
   "main": "ember-validator.js",
   "directories": {
@@ -20,7 +20,7 @@
     "url": "https://github.com/narkeeso/ember-validator.git"
   },
   "author": "Michael Narciso",
-  "license": "BSD-2-Clause",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/narkeeso/ember-validator/issues"
   }
