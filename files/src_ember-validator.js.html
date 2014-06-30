@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>src/ember-validator.js - Ember Validator</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.7.0/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="stylesheet" href="../assets/css/custom.css">
+    <link rel="stylesheet" href="../assets/vendor/bootstrap/css/bootstrap.css">
+    <link rel="shortcut icon" type="image/png" href="../assets/favicon.png">
+</head>
+<body class="yui3-skin-sam">
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <h1 class="brand" style="padding: 10px 16px 10px; height: 20px; line-height: 20px; margin-left: 0;">
+        
+	    <img alt="Ember Validator" src="../assets/css/logo.png" style="max-height: 65%;" title="Ember Validator">
+        
+            Ember Validator
+        </h1>
+	<div class="nav">
+            <li class="divider-vertical"></li>
+            <li>
+                <p class="navbar-text">
+                    API Docs for Version: <b>0.0.1</b>
+                </p>
+            </li>
+        </div>
+        <form class="navbar-form pull-right" style="line-height: 40px; height: 40px;">
+            <input style="margin-top: 0;" type="text" class="search-query" placeholder="Search for classes/modules..." data-obj='["classes/Validator.Result", "classes/Validator.Results", "classes/Validator.Rule", "classes/Validator.Rules", "classes/Validator.Support", "modules/Ember.Validator"]'>
+        </form>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="span3">
+	    <div>
+    <h3>APIs</h3>
+    <div id="sidebar">
+        <ul id="main-nav" class="nav nav-tabs" style="margin-bottom:0;">
+            <li class="active"><a href="#classes" data-toggle="tab">Classes</a></li>
+            <li><a href="#modules" data-toggle="tab">Modules</a></li>
+        </ul>
+
+        <div id="api-tabview-filter">
+            <input type="search" placeholder="Type to filter APIs">
+        </div>
+
+        <div class="tab-content" style="border: 1px solid #DDD; border-top:0;">
+            <div class="tab-pane active" id="classes">
+                <ul id="api-classes" class="nav nav-list">
+                    
+                        <li><a href="../classes/Validator.Result.html">Validator.Result</a></li>
+                    
+                        <li><a href="../classes/Validator.Results.html">Validator.Results</a></li>
+                    
+                        <li><a href="../classes/Validator.Rule.html">Validator.Rule</a></li>
+                    
+                        <li><a href="../classes/Validator.Rules.html">Validator.Rules</a></li>
+                    
+                        <li><a href="../classes/Validator.Support.html">Validator.Support</a></li>
+                    
+                </ul>
+            </div>
+
+            <div class="tab-pane" id="modules">
+                <ul id="api-modules" class="nav nav-list">
+                    
+                        <li><a href="../modules/Ember.Validator.html">Ember.Validator</a></li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+        </div>
+        <div class="span9">
+                <form id="options-form" class="form-inline pull-right">
+        Show:
+        <label for="api-show-inherited" class="checkbox">
+            <input type="checkbox" id="api-show-inherited" checked>
+            Inherited
+        </label>
+
+        <label for="api-show-protected" class="checkbox">
+            <input type="checkbox" id="api-show-protected">
+            Protected
+        </label>
+
+        <label for="api-show-private" class="checkbox">
+            <input type="checkbox" id="api-show-private">
+            Private
+        </label>
+        <label for="api-show-deprecated" class="checkbox">
+            <input type="checkbox" id="api-show-deprecated">
+            Deprecated
+        </label>
+
+    </form>
+
+
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+                        <div class="page-header">
+    <h1>src/ember-validator.js <small>File</small></h1>
+</div>
+
+<div class="file">
+    <pre class="prettyprint linenums">
+(function() {
+
+var VERSION = &#x27;0.0.1&#x27;;
+
+if (Ember.libraries) {
+  Ember.libraries.register(&#x27;Ember Validator&#x27;, VERSION);
+}
+
+/**
+ * @module Ember.Validator
+ * @extends Ember.Object
+ */
+Ember.Validator = Ember.Object.extend();
+
+/**
+ * The base rule class which stores the validate method and message settings.
+ *
+ * @namespace Validator
+ * @class Rule
+ * @extends Ember.Object
+ */
+Ember.Validator.Rule = Ember.Object.extend({
+  /** 
+   * Property used to customize the message formatting
+   * 
+   * @property messageFormats
+   * @type array
+   */
+  messageFormats: [],
+
+  /**
+   * Set this property when you want to customize the message to show something
+   * other than the default errorKey.
+   * 
+   * See: {{#crossLink &quot;Ember.Validator.Result/errorKey:property&quot;}}errorKey{{/crossLink}}
+   * 
+   * @property propertyFormat
+   * @type string
+   */
+  propertyFormat: null,
+
+  /**
+   * The property used to display the error message. Can be set to a customized
+   * message with formatting or without.
+   * 
+   * message is formatted like so:
+   * 
+   * @example
+   *  &#x60;&#x60;&#x60;
+   *  // %@1: errorKey || propertyFormat
+   *  // %@2+: messageFormats
+   * 
+   *  &#x27;%@1 has invalid length, must be %@2 %@3 chars&#x27;.fmt(errorKey, messageFormats);
+   *  &#x60;&#x60;&#x60;
+   * errorKey is defaulted to %@1 and messageFormats are designated for %@2+
+   * 
+   * Related: {{#crossLink &quot;Validator.Result/errorKey:property&quot;}}{{/crossLink}}
+   *
+   * @property message
+   * @uses messageFormats
+   * @type string
+   */
+  message: null,
+
+  /**
+   * Define validations in this method and return the Boolean value.
+   * 
+   * @method validate
+   * @param {*} value - The property value to validate
+   * @param {Object} options - The object validator with an object context included
+   * @return {Boolean} 
+   */
+  validate: function() {
+    Em.assert(&#x27;You must define a validate function for this to be a valid rule&#x27;, false);
+  }
+});
+
+/**
+ * Where Validator.Rule objects are defined for re-use
+ * 
+ * Related: {{#crossLink &quot;Validator.Rule&quot;}}{{/crossLink}}
+ * 
+ * @class Rules
+ * @namespace Validator
+ */
+Ember.Validator.Rules = {
+  required: {
+    validate: function(value) {
+      return !Em.isEmpty(value);
+    },
+    
+    message: &#x27;%@1 is required&#x27;
+  },
+
+  number: {
+    validate: function(value) {
+      return !isNaN(parseInt(value, 10));
+    },
+
+    message: &#x27;%@1 is not a number&#x27;
+  }
+};
+
+/**
+ * Validation result object used to store the validation.
+ *
+ * @class Result
+ * @namespace Validator
+ * @extends Ember.Object
+ */
+Ember.Validator.Result = Ember.Object.extend({
+  /**
+   * @property errorKey
+   * @type string
+   */
+  errorKey: null,
+  
+  /**
+   * @property isValid
+   * @type boolean
+   */
+  isValid: null,
+  
+  /**
+   * @property ruleName
+   * @type string
+   */
+  ruleName: null,
+  
+  /**
+   * The object being validated is set when a result is generated
+   *
+   * @private
+   * @property _validator
+   * @type Object
+   */
+  _validator: null,
+
+  /**
+   * Formats the message based on the errorKey and messageFormats.
+   * The errorKey is always set as the first argument
+   * 
+   * Related:
+   * {{#crossLink &quot;Validator.Rule/propertyFormat:property&quot;}}{{/crossLink}},
+   * {{#crossLink &quot;Validator.Rule/messageFormats:property&quot;}}{{/crossLink}}
+   * 
+   * @private
+   * @method _formatMessage
+   * @param  {String} propertyFormat
+   * @param  {Array} messageFormats
+   * @return {String} The formatted string
+   */
+  _formatMessage: function(propertyFormat, messageFormats) {
+    var formats = [];
+
+    formats = formats.concat(messageFormats);
+    formats.unshift(propertyFormat);
+
+    return Em.String.fmt(this.get(&#x27;_validator.message&#x27;), formats);
+  },
+
+  /**
+   * Computed property that formats the error message. Uses propertyFormat
+   * and messageFormats for customization.
+   * 
+   * Related:
+   * {{#crossLink &quot;Validator.Rule/propertyFormat:property&quot;}}{{/crossLink}},
+   * {{#crossLink &quot;Validator.Rule/messageFormats:property&quot;}}{{/crossLink}}
+   * 
+   * @property message
+   * @type {String}
+   */
+  message: function() {
+    var _validator = this.get(&#x27;_validator&#x27;);
+        propertyFormat = _validator.get(&#x27;propertyFormat&#x27;),
+        messageFormats = _validator.get(&#x27;messageFormats&#x27;),
+        propertyFormat = propertyFormat ? propertyFormat : this.get(&#x27;errorKey&#x27;);
+
+    return this._formatMessage(propertyFormat, messageFormats);
+  }.property(&#x27;_validator&#x27;)
+});
+
+/**
+ * The array proxy which stores all the validation results
+ * 
+ * @class Results
+ * @namespace Validator
+ * @extends Ember.ArrayProxy
+ */
+Ember.Validator.Results = Ember.ArrayProxy.extend({
+  /**
+   * An array of all the error messages generated
+   * 
+   * @property messages
+   * @type {Array}
+   */
+  messages: Em.computed.mapBy(&#x27;content&#x27;, &#x27;message&#x27;),
+  
+  /**
+   * An alias for the content property set on results which stores
+   * Ember.Validator.Result objects
+   * 
+   * @property errors
+   * @type {Array}
+   */
+  errors: Em.computed.alias(&#x27;content&#x27;),
+  
+  /**
+   * Set to false if any errors were generated in the validation
+   * 
+   * @property isValid
+   * @type {Boolean}
+   */
+  isValid: function() {
+    return Em.isEmpty(this.get(&#x27;errors&#x27;));
+  }.property(&#x27;errors.@each&#x27;),
+  
+  /**
+   * Retrieves the error message for given errorKey.
+   * 
+   * @method getMsgFor
+   * @param {String} errorKey
+   * @return {String}
+   */
+  getMsgFor: function(errorKey) {
+    var property = this.get(&#x27;errors&#x27;).findBy(&#x27;errorKey&#x27;, errorKey);
+    return property ? property.get(&#x27;message&#x27;) : null;
+  }
+});
+
+/**
+ * Add this mixin to any object to add validation support. Exposes the validate()
+ * method which looks for a validations object.
+ * 
+ * @class Support
+ * @namespace Validator
+ * @type {Ember.Mixin}
+ */
+Ember.Validator.Support = Ember.Mixin.create({
+  init: function() {
+    this._super();
+    this.set(&#x27;validationResults&#x27;, Em.Validator.Results.create({ content: [] }));
+  },
+  
+  /**
+   * The property where validations are defined.
+   * 
+   * @example
+   * &#x60;&#x60;&#x60;javascript
+   * App.Person = Ember.Object.extend(Ember.Validator.Support, {
+   *  name: null,
+   *  phone: null,
+   * 
+   *  validations: {
+   *    name: {
+   *      rules: [&#x27;required&#x27;]
+   *    },
+   *    phone: {
+   *       rules: [&#x27;required&#x27;, &#x27;phone&#x27;]
+   *       phone: function(value, options) {
+   *         // run validations
+   *       }
+   *    }
+   *  }
+   * });
+   * &#x60;&#x60;&#x60;
+   * 
+   * @property validations
+   * @required
+   * @type {Object}
+   */
+  validations: null,
+  
+  /**
+   * Gets all the property keys from defined validations object
+   * 
+   * @private
+   * @method _getValidationProperties
+   * @return {Array}
+   */
+  _getValidationProperties: function() {
+    var validations = this.validations;
+    Em.assert(&#x27;You do not have a \&#x27;validations\&#x27; object defined&#x27;, validations);
+    return Em.keys(validations);
+  },
+
+  /**
+   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
+   * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
+   * 
+   * @private
+   * @method _getRuleObj
+   * @param  {String} key
+   * @param  {String} ruleName
+   * @return {Object} - The rule object
+   */
+  _getRuleObj: function(key, ruleName) {
+    var validations = this.validations,
+        Rules = Em.Validator.Rules,
+        customRule = validations[key][ruleName],
+        builtInRuleCopy = Em.copy(Rules[ruleName]);
+
+    if (customRule) {
+      var rule = builtInRuleCopy ? Em.merge(builtInRuleCopy, customRule) : customRule,
+          hasValidateMethod = typeof rule.validate === &#x27;function&#x27;;
+
+      Em.assert(&#x27;Must have validate function defined in custom rule.&#x27;, 
+        hasValidateMethod);
+
+      return Em.Validator.Rule.create(rule);
+    }
+
+    if (builtInRuleCopy) {
+      return Em.Validator.Rule.create(builtInRuleCopy);
+    } else {
+      Em.assert(&#x27;No valid rules were found.&#x27;, false);
+    }
+  },
+  
+  /**
+   * Responsible for running validation rules and appending a result to
+   * validationResults.
+   * 
+   * @private
+   * @method _generateResult
+   * @param  {Array} rules - rule names defined as strings
+   * @param  {String} key - the current property being validated
+   */
+  _generateResult: function(rules, key) {
+    var self = this,
+        valueForKey = this.get(key),
+        results = this.get(&#x27;validationResults&#x27;);
+    
+    rules.find(function(ruleName) {
+      var validator = self._getRuleObj(key, ruleName);
+
+      // Should only run rules on required or values that are not undefined
+      if (ruleName === &#x27;required&#x27; || valueForKey !== undefined) {
+        // Build options to pass to validate
+        var options = validator;
+
+        options.context = self;
+
+        var didValidate = validator.validate(valueForKey, options);
+
+        if (!didValidate) {
+          var result = Em.Validator.Result.create({
+            isValid: false,
+            _validator: validator,
+            ruleName: ruleName,
+            errorKey: key
+          });
+
+          results.pushObject(result);
+          return true;
+        }
+      }
+    });
+  },
+
+  /**
+   * Looks for rules property in the errorKey set in validations
+   *
+   * @private
+   * @method _getRulesForKey
+   * @param {String} key
+   */
+  _getRulesForKey: function(key) {
+    var property = this.validations[key];
+
+    if (Em.typeOf(property) === &#x27;array&#x27;) {
+      return property;
+    } else if (Em.typeOf(property.rules) === &#x27;array&#x27;) {
+      return property.rules;
+    } else {
+      Em.Logger.warn(&#x27;No valid defined rules found for property \&#x27;&#x27; + key + &#x27;\&#x27;&#x27;);
+      return [];
+    }
+  },
+  
+  /**
+   * Runs all validations defined in the validations object and stores results.
+   * The method returns a results object.
+   * 
+   * @example Getting the validation
+   * &#x60;&#x60;&#x60;
+   * var person = App.Person.create({ name: null });
+   * 
+   * person.validate().get(&#x27;isValid&#x27;) // false;;
+   * &#x60;&#x60;&#x60;
+   * 
+   * @example Getting the error message
+   * &#x60;&#x60;&#x60;
+   * person.validate().getMsgFor(&#x27;name&#x27;); // &#x27;name is required&#x27;
+   * &#x60;&#x60;&#x60;
+   * 
+   * @method validate
+   * @return {Ember.Validator.Results} an instance of Validator.Results
+   * 
+   * Related:
+   * {{#crossLink &quot;Validator.Results&quot;}}{{/crossLink}},
+   * {{#crossLink &quot;Validator.Support/validations:property&quot;}}{{/crossLink}}
+   */
+  validate: function(keys) {
+    var self = this,
+        validations = this.get(&#x27;validations&#x27;);
+        
+    keys = keys ? [keys] : this._getValidationProperties();
+
+    this.get(&#x27;validationResults&#x27;).clear();
+    
+    keys.forEach(function(key) {
+      var rules = self._getRulesForKey(key);
+      self._generateResult(rules, key);
+    });
+    
+    return this.get(&#x27;validationResults&#x27;);
+  }
+});
+
+})();
+
+    </pre>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/jquery/jquery-1.8.2.min.js"></script>
+<script src="../assets/vendor/bootstrap/js/bootstrap.js"></script>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script src="../assets/js/yuidoc-bootstrap.js"></script>
+<script>prettyPrint();</script>
+</body>
+</html>
