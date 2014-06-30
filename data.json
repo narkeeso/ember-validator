@@ -3,7 +3,8 @@
         "name": "Ember Validator",
         "description": "Ember Validator a lightweight validation library.",
         "version": "0.0.1",
-        "url": "https://github.com/narkeeso/ember-validator"
+        "url": "https://github.com/narkeeso/ember-validator",
+        "logo": "http://i1279.photobucket.com/albums/y523/textcraft/Jun%202014%20-%204/24ca5e6939aae8614e526a8cdc2c82b83bb591f6da39a3ee5e6b4b0d3255bfef95601890afd80709da39a3ee5e6b4b0d3255bfef95601890afd80709c08c5265c5e3f7d0fcec_zps19304319.png"
     },
     "files": {
         "src/ember-validator.js": {
@@ -431,12 +432,12 @@
             "description": "Runs all validations defined in the validations object and stores results.\nThe method returns a results object.",
             "example": [
                 " Getting the validation\n```\nvar person = App.Person.create({ name: null });\n\nperson.validate().get('isValid') // false;;\n```",
-                " Getting the error message\n```\nperson.validate().getMsgFor('name'); // 'name is required'\n```"
+                " Getting the error message\n```\nperson.validate().getMsgFor('name'); // 'name is required'\n```\n\nRelated:\n{{#crossLink \"Validator.Results\"}}{{/crossLink}},\n{{#crossLink \"Validator.Support/validations:property\"}}{{/crossLink}}"
             ],
             "itemtype": "method",
             "name": "validate",
             "return": {
-                "description": "an instance of Validator.Results\n\nRelated:\n{{#crossLink \"Validator.Results\"}}{{/crossLink}},\n{{#crossLink \"Validator.Support/validations:property\"}}{{/crossLink}}",
+                "description": "",
                 "type": "Ember.Validator.Results"
             },
             "class": "Validator.Support",
