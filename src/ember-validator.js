@@ -15,8 +15,9 @@ Ember.Validator = Ember.Object.extend();
 /**
  * The base rule class which stores the validate method and message settings.
  *
- * @namespace Validator
  * @class Rule
+ * @constructor
+ * @namespace Validator
  * @extends Ember.Object
  */
 Ember.Validator.Rule = Ember.Object.extend({
@@ -76,14 +77,35 @@ Ember.Validator.Rule = Ember.Object.extend({
 });
 
 /**
- * Where Validator.Rule objects are defined for re-use
+ * A static class used to defined reusable rules. Each property defined on the
+ * root of this class are wrapped in Ember.Validator.Rule.
  * 
- * Related: {{#crossLink "Validator.Rule"}}{{/crossLink}}
+ * An example of adding more rules:
  * 
+ * ```javascript
+ * Ember.Validator.Rules.reopen({
+ *   minLength: {
+ *     min: 6,
+ * 
+ *     validate: function(value, options) {
+ *       this.messageFormats = ['Minimum', options.min];
+ *       return value.split('').length > options.min;
+ *     },
+ *     
+ *     message: '%@2 of %@3 characters required.'
+ *   }
+ * });
+ * ```
+ * 
+ * Related:
+ * {{#crossLink "Validator.Rule"}}{{/crossLink}},
+ * http://emberjs.com/api/classes/Ember.String.html#method_fmt
+ * 
+ * @static
  * @class Rules
  * @namespace Validator
  */
-Ember.Validator.Rules = {
+Ember.Validator.Rules = Ember.Object.create({
   required: {
     validate: function(value) {
       return !Em.isEmpty(value);
@@ -99,12 +121,13 @@ Ember.Validator.Rules = {
 
     message: '%@1 is not a number'
   }
-};
+});
 
 /**
  * Validation result object used to store the validation.
  *
  * @class Result
+ * @constructor
  * @namespace Validator
  * @extends Ember.Object
  */
@@ -183,6 +206,7 @@ Ember.Validator.Result = Ember.Object.extend({
 /**
  * The array proxy which stores all the validation results
  * 
+ * @constructor
  * @class Results
  * @namespace Validator
  * @extends Ember.ArrayProxy
@@ -233,6 +257,7 @@ Ember.Validator.Results = Ember.ArrayProxy.extend({
  * method which looks for a validations object.
  * 
  * @class Support
+ * @static
  * @namespace Validator
  * @type {Ember.Mixin}
  */
