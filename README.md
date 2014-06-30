@@ -10,7 +10,7 @@ Usage
 -----
 
 ```javascript
-App.CreditCard = Em.Object.extend(Em.ValidatorMixin, {
+App.CreditCard = Em.Object.extend(Em.Validator.Support, {
   validations: {
     name: {
       rules: ['required']
@@ -26,14 +26,16 @@ var creditCard = App.CreditCard.create({
   number: null
 });
 
-creditCard.validate().get('isValid'); // false
-creditCard.validate().get('messages'); // ['number is required']
+var results = creditCard.validate();
+
+results.get('isValid'); // false
+results.getMsgFor('number'); // 'number is required'
 
 creditCard.set('number', '4111111111111111');
 creditCard.validate().get('isValid'); // true
 ```
 
-Add Em.ValidationMixin to any Ember.Object and create a validations with properties to validate and an array of rules defined as strings.
+Add Em.Validator.Support to any Ember.Object and create a validations with properties to validate and an array of rules defined as strings.
 
 ### Custom Validation
 
