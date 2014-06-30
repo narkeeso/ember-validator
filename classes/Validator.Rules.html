@@ -15,7 +15,7 @@
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
             
-                <h1><img src="http://i1279.photobucket.com/albums/y523/textcraft/Jun%202014%20-%204/24ca5e6939aae8614e526a8cdc2c82b83bb591f6da39a3ee5e6b4b0d3255bfef95601890afd80709da39a3ee5e6b4b0d3255bfef95601890afd80709c08c5265c5e3f7d0fcec_zps19304319.png" title="Ember Validator"></h1>
+                <h1><img src="http://i1279.photobucket.com/albums/y523/textcraft/Jun%202014%20-%204/24ca5e6939aae8614e526a8cdc2c82b83bb591f6da39a3ee5e6b4b0d3255bfef95601890afd80709da39a3ee5e6b4b0d3255bfef95601890afd80709c824e6667975219e0101_zps7bc77bf6.png" title="Ember Validator"></h1>
             
         </div>
         <div class="yui3-u-1-4 version">
@@ -100,7 +100,7 @@
 
     
         <div class="foundat">
-            Defined in: <a href="../files/src_ember-validator.js.html#l78"><code>src&#x2F;ember-validator.js:78</code></a>
+            Defined in: <a href="../files/src_ember-validator.js.html#l79"><code>src&#x2F;ember-validator.js:79</code></a>
         </div>
     
 
@@ -116,8 +116,24 @@
 
 
 <div class="box intro">
-    <p>Where Validator.Rule objects are defined for re-use</p>
-<p>Related: <a href="../classes/Validator.Rule.html" class="crosslink">Validator.Rule</a></p>
+    <p>A static class used to defined reusable rules. Each property defined on the
+root of this class are wrapped in Ember.Validator.Rule.</p>
+<p>An example of adding more rules:</p>
+<pre class="code prettyprint"><code class="lang-javascript">Ember.Validator.Rules.reopen({
+  minLength: {
+    min: 6,
+
+    validate: function(value, options) {
+      this.messageFormats = [&#39;Minimum&#39;, options.min];
+      return value.split(&#39;&#39;).length &gt; options.min;
+    },
+
+    message: &#39;%@2 of %@3 characters required.&#39;
+  }
+});</code></pre>
+<p>Related:
+<a href="../classes/Validator.Rule.html" class="crosslink">Validator.Rule</a>,
+<a href="http://emberjs.com/api/classes/Ember.String.html#method_fmt">http://emberjs.com/api/classes/Ember.String.html#method_fmt</a></p>
 
 </div>
 

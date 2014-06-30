@@ -15,7 +15,7 @@
     <div id="hd" class="yui3-g header">
         <div class="yui3-u-3-4">
             
-                <h1><img src="http://i1279.photobucket.com/albums/y523/textcraft/Jun%202014%20-%204/24ca5e6939aae8614e526a8cdc2c82b83bb591f6da39a3ee5e6b4b0d3255bfef95601890afd80709da39a3ee5e6b4b0d3255bfef95601890afd80709c08c5265c5e3f7d0fcec_zps19304319.png" title="Ember Validator"></h1>
+                <h1><img src="http://i1279.photobucket.com/albums/y523/textcraft/Jun%202014%20-%204/24ca5e6939aae8614e526a8cdc2c82b83bb591f6da39a3ee5e6b4b0d3255bfef95601890afd80709da39a3ee5e6b4b0d3255bfef95601890afd80709c824e6667975219e0101_zps7bc77bf6.png" title="Ember Validator"></h1>
             
         </div>
         <div class="yui3-u-1-4 version">
@@ -113,8 +113,9 @@ Ember.Validator = Ember.Object.extend();
 /**
  * The base rule class which stores the validate method and message settings.
  *
- * @namespace Validator
  * @class Rule
+ * @constructor
+ * @namespace Validator
  * @extends Ember.Object
  */
 Ember.Validator.Rule = Ember.Object.extend({
@@ -174,14 +175,35 @@ Ember.Validator.Rule = Ember.Object.extend({
 });
 
 /**
- * Where Validator.Rule objects are defined for re-use
+ * A static class used to defined reusable rules. Each property defined on the
+ * root of this class are wrapped in Ember.Validator.Rule.
  * 
- * Related: {{#crossLink &quot;Validator.Rule&quot;}}{{/crossLink}}
+ * An example of adding more rules:
  * 
+ * &#x60;&#x60;&#x60;javascript
+ * Ember.Validator.Rules.reopen({
+ *   minLength: {
+ *     min: 6,
+ * 
+ *     validate: function(value, options) {
+ *       this.messageFormats = [&#x27;Minimum&#x27;, options.min];
+ *       return value.split(&#x27;&#x27;).length &gt; options.min;
+ *     },
+ *     
+ *     message: &#x27;%@2 of %@3 characters required.&#x27;
+ *   }
+ * });
+ * &#x60;&#x60;&#x60;
+ * 
+ * Related:
+ * {{#crossLink &quot;Validator.Rule&quot;}}{{/crossLink}},
+ * http://emberjs.com/api/classes/Ember.String.html#method_fmt
+ * 
+ * @static
  * @class Rules
  * @namespace Validator
  */
-Ember.Validator.Rules = {
+Ember.Validator.Rules = Ember.Object.create({
   required: {
     validate: function(value) {
       return !Em.isEmpty(value);
@@ -197,12 +219,13 @@ Ember.Validator.Rules = {
 
     message: &#x27;%@1 is not a number&#x27;
   }
-};
+});
 
 /**
  * Validation result object used to store the validation.
  *
  * @class Result
+ * @constructor
  * @namespace Validator
  * @extends Ember.Object
  */
@@ -281,6 +304,7 @@ Ember.Validator.Result = Ember.Object.extend({
 /**
  * The array proxy which stores all the validation results
  * 
+ * @constructor
  * @class Results
  * @namespace Validator
  * @extends Ember.ArrayProxy
@@ -331,6 +355,7 @@ Ember.Validator.Results = Ember.ArrayProxy.extend({
  * method which looks for a validations object.
  * 
  * @class Support
+ * @static
  * @namespace Validator
  * @type {Ember.Mixin}
  */
