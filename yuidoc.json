@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "url": "https://github.com/narkeeso/ember-validator",
   "options": {
-    "outdir": "docset/",
+    "outdir": "docs/",
     "exclude": "node_modules, bower_components",
     "paths": ["./src/*"],
     "themedir": "node_modules/yuidoc-bootstrap-theme",
