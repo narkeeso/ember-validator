@@ -6,6 +6,10 @@ Create a lightweight and flexible validation library that supports complex valid
 
 ###### Disclaimer: **such alpha**, **much risk**, currently only tested with Ember 1.5.1
 
+API Documentation
+-----------------
+You can find the API documentation here [http://narkeeso.github.io/ember-validator](http://narkeeso.github.io/ember-validator)
+
 Usage
 -----
 

@@ -394,12 +394,12 @@ Ember.Validator.Support = Ember.Mixin.create({
    * person.validate().getMsgFor('name'); // 'name is required'
    * ```
    * 
-   * @method validate
-   * @return {Ember.Validator.Results} an instance of Validator.Results
-   * 
    * Related:
    * {{#crossLink "Validator.Results"}}{{/crossLink}},
    * {{#crossLink "Validator.Support/validations:property"}}{{/crossLink}}
+   * 
+   * @method validate
+   * @return {Ember.Validator.Results}
    */
   validate: function(keys) {
     var self = this,
