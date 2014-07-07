@@ -222,3 +222,56 @@ test('Supports setting your own property name for message formatting', function(
   var results = card.validate();
   equal(results.getMsgFor('name'), 'full name is over maximum of 10 characters', 'should display formatted string');
 });
+
+test('Validator.Result instance has access to the object being validated', function() {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
+    validations: {
+      name: {
+        rules: ['required', 'notMichael'],
+        notMichael: {
+          validate: function(value, options) {
+            return false;
+          }
+        }
+      }
+    }
+  });
+
+  var card = App.CreditCard.create({
+    name: 'Michael'
+  });
+
+  var results = card.validate(),
+      result = results.getError('name');
+      
+  equal(result.get('context'), card, 'context matches the original instance');
+});
+
+test('TRIM_VALUE when enabled is trimming whitespace before evaluating values', function() {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
+    validations: {
+      name: {
+        rules: ['required', 'length'],
+        length: {
+          validate: function(value, options) {
+            return String(value).length === 7;
+          }
+        }
+      }
+    }
+  });
+  
+  var card = App.CreditCard.create({
+    name: '  Michael  '
+  });
+  
+  var results = card.validate();
+  equal(results.get('isValid'), true, 'Should return valid because Michael is 7 characters');
+  
+  // Make sure it doesn't trim when set to false
+  Em.Validator.reopen({ TRIM_VALUE: false });
+  card.set('name', '  Michael  ');
+  results = card.validate();
+  
+  equal(results.get('isValid'), false, 'Should return invalid because length is 11 with whitespace');
+});

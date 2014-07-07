@@ -1,6 +1,6 @@
 (function() {
 
-var VERSION = '0.0.1';
+var VERSION = '0.0.2';
 
 if (Ember.libraries) {
   Ember.libraries.register('Ember Validator', VERSION);
@@ -8,9 +8,127 @@ if (Ember.libraries) {
 
 /**
  * @module Ember.Validator
- * @extends Ember.Object
+ * @main Ember.Validator
  */
-Ember.Validator = Ember.Object.extend();
+
+/**
+ * @class Ember.Validator
+ * @namespace Ember
+ * @extends Ember.Object
+ * @static
+ */
+Ember.Validator = Ember.Object.create({
+  /**
+   * Option to trim whitespace from string values before validation.
+   * 
+   * @property TRIM_VALUE
+   * @type {Boolean}
+   */
+  TRIM_VALUE: true,
+  
+  /**
+   * Looks for rules property in the errorKey set in validations
+   *
+   * @private
+   * @method _getRulesForKey
+   * @param {String} key
+   */
+  _getRulesForKey: function(validations, key) {
+    var property = validations[key];
+
+    if (Em.typeOf(property) === 'array') {
+      return property;
+    } else if (Em.typeOf(property.rules) === 'array') {
+      return property.rules;
+    } else {
+      Em.Logger.warn('No valid defined rules found for property \'' + key + '\'');
+      return [];
+    }
+  },
+  
+  /**
+   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
+   * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
+   * 
+   * @private
+   * @method _getRuleObj
+   * @param {String} context
+   * @param {String} key
+   * @param {String} ruleName
+   * @return {Object} - The rule object
+   */
+  _getRuleObj: function(context, key, ruleName) {
+    var validations = context.validations,
+        Rules = Em.Validator.Rules,
+        customRule = validations[key][ruleName],
+        builtInRuleCopy = Em.copy(Rules[ruleName]);
+
+    if (customRule) {
+      var rule = builtInRuleCopy ? Em.merge(builtInRuleCopy, customRule) : customRule,
+          hasValidateMethod = typeof rule.validate === 'function';
+
+      Em.assert('Must have validate function defined in custom rule.', 
+        hasValidateMethod);
+
+      return Em.Validator.Rule.create(rule);
+    }
+
+    if (builtInRuleCopy) {
+      return Em.Validator.Rule.create(builtInRuleCopy);
+    } else {
+      Em.assert('No valid rules were found.', false);
+    }
+  },
+  
+  /**
+   * Responsible for running validation rules and appending a result to
+   * validationResults.
+   * 
+   * @private
+   * @method _generateResult
+   * @param {Object} context - The object doing the validation
+   * @param {Array} rules - rule names defined as strings
+   * @param {String} key - the current property being validated
+   */
+  _generateResult: function(context, rules, key) {
+    var self = this,
+        valueForKey = context.get(key),
+        results = context.get('validationResults');
+
+    if (Ember.Validator.TRIM_VALUE && Em.typeOf(valueForKey) === 'string') {
+      var trimmed = valueForKey.trim();
+      context.set(key, trimmed);
+      valueForKey = trimmed;
+    }
+    
+    rules.find(function(ruleName) {
+      var validator = self._getRuleObj(context, key, ruleName);
+
+      // Should only run rules on required or values that are not undefined
+      if (ruleName === 'required' || valueForKey !== undefined) {
+        // Build options to pass to validate
+        var options = validator;
+        
+        options.context = context;
+
+        var didValidate = validator.validate(valueForKey, options);
+
+        if (!didValidate) {
+          var result = Em.Validator.Result.create({
+            context: context,
+            isValid: false,
+            _validator: validator,
+            ruleName: ruleName,
+            errorKey: key
+          });
+          
+          results.pushObject(result);
+          return true;
+        }
+      }
+    });
+  }
+});
 
 /**
  * The base rule class which stores the validate method and message settings.
@@ -133,6 +251,14 @@ Ember.Validator.Rules = Ember.Object.create({
  */
 Ember.Validator.Result = Ember.Object.extend({
   /**
+   * The object that is running the validation.
+   * 
+   * @property context
+   * @type {Object || Ember.Object}
+   */
+  context: null,
+  
+  /**
    * @property errorKey
    * @type string
    */
@@ -247,8 +373,12 @@ Ember.Validator.Results = Ember.ArrayProxy.extend({
    * @return {String}
    */
   getMsgFor: function(errorKey) {
-    var property = this.get('errors').findBy('errorKey', errorKey);
-    return property ? property.get('message') : null;
+    var error = this.getError(errorKey);
+    return error ? error.get('message') : null;
+  },
+  
+  getError: function(errorKey) {
+    return this.get('errors').findBy('errorKey', errorKey);
   }
 });
 
@@ -297,113 +427,6 @@ Ember.Validator.Support = Ember.Mixin.create({
   validations: null,
   
   /**
-   * Gets all the property keys from defined validations object
-   * 
-   * @private
-   * @method _getValidationProperties
-   * @return {Array}
-   */
-  _getValidationProperties: function() {
-    var validations = this.validations;
-    Em.assert('You do not have a \'validations\' object defined', validations);
-    return Em.keys(validations);
-  },
-
-  /**
-   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
-   * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
-   * 
-   * @private
-   * @method _getRuleObj
-   * @param  {String} key
-   * @param  {String} ruleName
-   * @return {Object} - The rule object
-   */
-  _getRuleObj: function(key, ruleName) {
-    var validations = this.validations,
-        Rules = Em.Validator.Rules,
-        customRule = validations[key][ruleName],
-        builtInRuleCopy = Em.copy(Rules[ruleName]);
-
-    if (customRule) {
-      var rule = builtInRuleCopy ? Em.merge(builtInRuleCopy, customRule) : customRule,
-          hasValidateMethod = typeof rule.validate === 'function';
-
-      Em.assert('Must have validate function defined in custom rule.', 
-        hasValidateMethod);
-
-      return Em.Validator.Rule.create(rule);
-    }
-
-    if (builtInRuleCopy) {
-      return Em.Validator.Rule.create(builtInRuleCopy);
-    } else {
-      Em.assert('No valid rules were found.', false);
-    }
-  },
-  
-  /**
-   * Responsible for running validation rules and appending a result to
-   * validationResults.
-   * 
-   * @private
-   * @method _generateResult
-   * @param  {Array} rules - rule names defined as strings
-   * @param  {String} key - the current property being validated
-   */
-  _generateResult: function(rules, key) {
-    var self = this,
-        valueForKey = this.get(key),
-        results = this.get('validationResults');
-    
-    rules.find(function(ruleName) {
-      var validator = self._getRuleObj(key, ruleName);
-
-      // Should only run rules on required or values that are not undefined
-      if (ruleName === 'required' || valueForKey !== undefined) {
-        // Build options to pass to validate
-        var options = validator;
-
-        options.context = self;
-
-        var didValidate = validator.validate(valueForKey, options);
-
-        if (!didValidate) {
-          var result = Em.Validator.Result.create({
-            isValid: false,
-            _validator: validator,
-            ruleName: ruleName,
-            errorKey: key
-          });
-
-          results.pushObject(result);
-          return true;
-        }
-      }
-    });
-  },
-
-  /**
-   * Looks for rules property in the errorKey set in validations
-   *
-   * @private
-   * @method _getRulesForKey
-   * @param {String} key
-   */
-  _getRulesForKey: function(key) {
-    var property = this.validations[key];
-
-    if (Em.typeOf(property) === 'array') {
-      return property;
-    } else if (Em.typeOf(property.rules) === 'array') {
-      return property.rules;
-    } else {
-      Em.Logger.warn('No valid defined rules found for property \'' + key + '\'');
-      return [];
-    }
-  },
-  
-  /**
    * Runs all validations defined in the validations object and stores results.
    * The method returns a results object.
    * 
@@ -423,20 +446,28 @@ Ember.Validator.Support = Ember.Mixin.create({
    * {{#crossLink "Validator.Results"}}{{/crossLink}},
    * {{#crossLink "Validator.Support/validations:property"}}{{/crossLink}}
    * 
+   * You can also choose which keys to run validations on by passing an array.
+   * ```
+   * 
    * @method validate
+   * @param {Array} keys - An array of object keys to validate
    * @return {Ember.Validator.Results}
    */
   validate: function(keys) {
     var self = this,
-        validations = this.get('validations');
+        validations = this.get('validations'),
+        Validator = Ember.Validator;
         
-    keys = keys ? [keys] : this._getValidationProperties();
-
-    this.get('validationResults').clear();
+    // Check if keys are being sent manually in the method before checking 
+    // validations
+    keys = keys ? [keys] : Em.keys(validations);
+    Em.assert('You do not have a \'validations\' object defined', validations);
     
+    this.get('validationResults').clear();
+        
     keys.forEach(function(key) {
-      var rules = self._getRulesForKey(key);
-      self._generateResult(rules, key);
+      var rules = Validator._getRulesForKey(validations, key);
+      Validator._generateResult(self, rules, key);
     });
     
     return this.get('validationResults');
