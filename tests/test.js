@@ -1,5 +1,25 @@
 var App = {};
 
+test('Validation.Results instance should have it\'s error properties mapped', function() {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
+    validations: {
+      name: {
+        rules: ['required', 'notMichael'],
+        notMichael: {
+          validate: function(value, options) {
+            return false;
+          }
+        }
+      }
+    }
+  });
+  
+  var card = App.CreditCard.create();
+  results = card.validate();
+  
+  equal(results.get('error.name') instanceof Ember.Validator.Error, true, 'should be an instance of Ember.Validator.Error');
+});
+
 test('Built-in required rule', function() {
   App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
@@ -115,10 +135,10 @@ test('Supports custom validator rule', function() {
   ok(card, 'created');
 
   var result = card.validate().get('isValid'),
-      messages = card.validate().get('messages');
+      message = card.validate().get('error.cvv.message');
 
   equal(result, false, 'Validation should fail because cvv is 4 digits');
-  equal(messages[0], 'invalid cvv', 'Should display set message in custom validator');
+  equal(message, 'invalid cvv', 'Should display set message in custom validator');
 
   card.set('cvv', '944');
   result = card.validate().get('isValid');
@@ -143,11 +163,11 @@ test('Only show 1 error per property', function() {
   });
 
   var results = card.validate();
-  equal(results.get('messages.length'), 1, 'Should only have 1 error');
+  equal(Em.keys(results.content).length, 1, 'Should only have 1 error');
 
   card.set('name', undefined);
   results = card.validate();
-  equal(results.get('messages.length'), 2, 'Should only have 2 errors');
+  equal(results.get('errors.length'), 2, 'Should only have 2 errors');
 });
 
 test('Can retrieve errors by key name', function() {
@@ -163,8 +183,10 @@ test('Can retrieve errors by key name', function() {
     name: null
   });
 
-  var results = card.validate();
-  equal(results.getMsgFor('name'), 'name is required', 'retrieve message using getMsgFor()');
+  var results = card.validate(),
+      error = results.get('error.name');
+      
+  ok(error instanceof Em.Validator.Error, 'Error is an instance of Validator.Error');
 });
 
 test('Supports message sending additional message formats', function() {
@@ -191,7 +213,7 @@ test('Supports message sending additional message formats', function() {
   });
 
   var results = card.validate();
-  equal(results.getMsgFor('name'), 'name is over maximum of 10 characters', 'should display formatted string');
+  equal(results.get('error.name.message'), 'name is over maximum of 10 characters', 'should display formatted string');
 });
 
 test('Supports setting your own property name for message formatting', function() {
@@ -220,7 +242,7 @@ test('Supports setting your own property name for message formatting', function(
   });
 
   var results = card.validate();
-  equal(results.getMsgFor('name'), 'full name is over maximum of 10 characters', 'should display formatted string');
+  equal(results.get('error.name.message'), 'full name is over maximum of 10 characters', 'should display formatted string');
 });
 
 test('Validator.Result instance has access to the object being validated', function() {
@@ -229,8 +251,9 @@ test('Validator.Result instance has access to the object being validated', funct
       name: {
         rules: ['required', 'notMichael'],
         notMichael: {
+          message: 'This is not Michael',
           validate: function(value, options) {
-            return false;
+            return value === 'Michael';
           }
         }
       }
@@ -238,21 +261,22 @@ test('Validator.Result instance has access to the object being validated', funct
   });
 
   var card = App.CreditCard.create({
-    name: 'Michael'
+    name: 'Courtney'
   });
 
   var results = card.validate(),
-      result = results.getError('name');
+      result = results.get('error.name');
       
   equal(result.get('context'), card, 'context matches the original instance');
 });
 
-test('TRIM_VALUE when enabled is trimming whitespace before evaluating values', function() {
+test('TRIM_VALUE option is trims whitespace before evaluating values', function() {
   App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
         rules: ['required', 'length'],
         length: {
+          message: 'Invalid %@1 length',
           validate: function(value, options) {
             return String(value).length === 7;
           }
@@ -274,4 +298,35 @@ test('TRIM_VALUE when enabled is trimming whitespace before evaluating values', 
   results = card.validate();
   
   equal(results.get('isValid'), false, 'Should return invalid because length is 11 with whitespace');
+});
+
+test('Support for validating specified keys in the validate() method', function() {
+  App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
+    validations: {
+      name: {
+        rules: ['required']
+      },
+      number: {
+        rules: ['required', 'number']
+      }
+    }
+  });
+  
+  var card = App.CreditCard.create({
+    name: null,
+    number: 'four'
+  });
+  
+  var results = card.validate('number');
+  
+  equal(results.get('errors.length'), 1, 'Should only have 1 error');
+  ok(results.get('error.number'), 'Error for number should exist in results.');
+  
+  // Test sending arrays
+  results = card.validate(['name', 'number']);
+  equal(results.get('errors.length'), 2, 'Should have 2 errors');
+  
+  // Test sending comma delimited
+  results = card.validate('name', 'number');
+  equal(results.get('errors.length'), 2, 'Should have 2 errors');
 });

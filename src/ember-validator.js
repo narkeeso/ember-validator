@@ -1,6 +1,6 @@
 (function() {
 
-var VERSION = '0.0.2';
+var VERSION = '0.1.0';
 
 if (Ember.libraries) {
   Ember.libraries.register('Ember Validator', VERSION);
@@ -47,6 +47,51 @@ Ember.Validator = Ember.Object.create({
   },
   
   /**
+   * Creates the error message.
+   * 
+   * @private
+   * @method _createResultMessage
+   * @param {String} errorKey
+   * @param {Ember.Validator.Rule} rule
+   */
+  _createResultMessage: function(errorKey, rule) {
+    var propertyFormat = rule.get('propertyFormat'),
+        messageFormats = rule.get('messageFormats');
+        
+    propertyFormat = propertyFormat ? propertyFormat : errorKey;
+      
+    return this._formatMessage(rule, propertyFormat, messageFormats);
+  },
+
+  /**
+   * Formats the message based on the errorKey and messageFormats.
+   * The errorKey is always set as the first argument
+   * 
+   * Related:
+   * {{#crossLink "Validator.Rule/propertyFormat:property"}}{{/crossLink}},
+   * {{#crossLink "Validator.Rule/messageFormats:property"}}{{/crossLink}}
+   * 
+   * @private
+   * @method _formatMessage
+   * @param {Ember.Validator.Rule} rule
+   * @param  {String} propertyFormat
+   * @param  {Array} messageFormats
+   * @return {String} The formatted string
+   */
+  _formatMessage: function(rule, propertyFormat, messageFormats) {
+    var formats = [],
+        message = rule.get('message');
+        
+    Em.assert('You must specify an error message for rule name ' + 
+      '(%@)'.fmt(rule.get('name')), message);
+
+    formats = formats.concat(messageFormats);
+    formats.unshift(propertyFormat);
+
+    return Em.String.fmt(message, formats);
+  },
+  
+  /**
    * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
    * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
    * 
@@ -69,10 +114,10 @@ Ember.Validator = Ember.Object.create({
 
       Em.assert('Must have validate function defined in custom rule.', 
         hasValidateMethod);
-
-      return Em.Validator.Rule.create(rule);
+        
+      return Em.Validator.Rule.create(rule, { name: ruleName });
     }
-
+    
     if (builtInRuleCopy) {
       return Em.Validator.Rule.create(builtInRuleCopy);
     } else {
@@ -81,8 +126,10 @@ Ember.Validator = Ember.Object.create({
   },
   
   /**
-   * Responsible for running validation rules and appending a result to
-   * validationResults.
+   * Responsible for running validation rules and adding the error to an
+   * instance of Ember.Validator.Error.
+   * 
+   * Result generation will stop at the first failed validation per key.
    * 
    * @private
    * @method _generateResult
@@ -93,7 +140,7 @@ Ember.Validator = Ember.Object.create({
   _generateResult: function(context, rules, key) {
     var self = this,
         valueForKey = context.get(key),
-        results = context.get('validationResults');
+        results = context.get('validatorResult');
 
     if (Ember.Validator.TRIM_VALUE && Em.typeOf(valueForKey) === 'string') {
       var trimmed = valueForKey.trim();
@@ -114,15 +161,19 @@ Ember.Validator = Ember.Object.create({
         var didValidate = validator.validate(valueForKey, options);
 
         if (!didValidate) {
-          var result = Em.Validator.Result.create({
+          var message = self._createResultMessage(key, validator),
+              result = Ember.Validator.Error.create();
+              
+          result.setProperties({
+            message: message,
             context: context,
             isValid: false,
-            _validator: validator,
             ruleName: ruleName,
             errorKey: key
           });
           
-          results.pushObject(result);
+          results.set(key, result);
+          
           return true;
         }
       }
@@ -151,7 +202,7 @@ Ember.Validator.Rule = Ember.Object.extend({
    * Set this property when you want to customize the message to show something
    * other than the default errorKey.
    * 
-   * See: {{#crossLink "Ember.Validator.Result/errorKey:property"}}errorKey{{/crossLink}}
+   * See: {{#crossLink "Ember.Validator.Error/errorKey:property"}}errorKey{{/crossLink}}
    * 
    * @property propertyFormat
    * @type string
@@ -173,7 +224,7 @@ Ember.Validator.Rule = Ember.Object.extend({
    *  ```
    * errorKey is defaulted to %@1 and messageFormats are designated for %@2+
    * 
-   * Related: {{#crossLink "Validator.Result/errorKey:property"}}{{/crossLink}}
+   * Related: {{#crossLink "Validator.Error/errorKey:property"}}{{/crossLink}}
    *
    * @property message
    * @uses messageFormats
@@ -244,12 +295,18 @@ Ember.Validator.Rules = Ember.Object.create({
 /**
  * Validation result object used to store the validation.
  *
- * @class Result
+ * @class Error
  * @constructor
  * @namespace Validator
  * @extends Ember.Object
  */
-Ember.Validator.Result = Ember.Object.extend({
+Ember.Validator.Error = Ember.Object.extend({
+  /**
+   * @property message
+   * @type String
+   */
+  message: null,
+  
   /**
    * The object that is running the validation.
    * 
@@ -274,86 +331,54 @@ Ember.Validator.Result = Ember.Object.extend({
    * @property ruleName
    * @type string
    */
-  ruleName: null,
-  
-  /**
-   * The object being validated is set when a result is generated
-   *
-   * @private
-   * @property _validator
-   * @type Object
-   */
-  _validator: null,
-
-  /**
-   * Formats the message based on the errorKey and messageFormats.
-   * The errorKey is always set as the first argument
-   * 
-   * Related:
-   * {{#crossLink "Validator.Rule/propertyFormat:property"}}{{/crossLink}},
-   * {{#crossLink "Validator.Rule/messageFormats:property"}}{{/crossLink}}
-   * 
-   * @private
-   * @method _formatMessage
-   * @param  {String} propertyFormat
-   * @param  {Array} messageFormats
-   * @return {String} The formatted string
-   */
-  _formatMessage: function(propertyFormat, messageFormats) {
-    var formats = [];
-
-    formats = formats.concat(messageFormats);
-    formats.unshift(propertyFormat);
-
-    return Em.String.fmt(this.get('_validator.message'), formats);
-  },
-
-  /**
-   * Computed property that formats the error message. Uses propertyFormat
-   * and messageFormats for customization.
-   * 
-   * Related:
-   * {{#crossLink "Validator.Rule/propertyFormat:property"}}{{/crossLink}},
-   * {{#crossLink "Validator.Rule/messageFormats:property"}}{{/crossLink}}
-   * 
-   * @property message
-   * @type {String}
-   */
-  message: function() {
-    var _validator = this.get('_validator');
-        propertyFormat = _validator.get('propertyFormat'),
-        messageFormats = _validator.get('messageFormats'),
-        propertyFormat = propertyFormat ? propertyFormat : this.get('errorKey');
-
-    return this._formatMessage(propertyFormat, messageFormats);
-  }.property('_validator')
+  ruleName: null
 });
 
 /**
  * The array proxy which stores all the validation results
  * 
  * @constructor
- * @class Results
+ * @class Result
  * @namespace Validator
- * @extends Ember.ArrayProxy
+ * @extends Ember.ObjectProxy
  */
-Ember.Validator.Results = Ember.ArrayProxy.extend({
+Ember.Validator.Result = Ember.ObjectProxy.extend({
+  /**
+   * All results are set in the content property.
+   *
+   * @property content
+   * @type Object
+   */
+  content: null,
+  
+  /**
+   * @property error
+   * @type {Object}
+   */
+  error: Em.computed.alias('content'),
+  
+  /**
+   * An array of all errors that exist in the content property
+   * 
+   * @property errors
+   * @type {Array}
+   */
+  errors: function() {
+    var content = this.get('content');
+    
+    return Em.keys(content).reduce(function(errors, key) {
+      errors.pushObject(content.get(key));
+      return errors;
+    }, []);
+  }.property('content'),
+  
   /**
    * An array of all the error messages generated
    * 
    * @property messages
    * @type {Array}
    */
-  messages: Em.computed.mapBy('content', 'message'),
-  
-  /**
-   * An alias for the content property set on results which stores
-   * Ember.Validator.Result objects
-   * 
-   * @property errors
-   * @type {Array}
-   */
-  errors: Em.computed.alias('content'),
+  messages: Em.computed.mapBy('errors', 'message'),
   
   /**
    * Set to false if any errors were generated in the validation
@@ -363,23 +388,7 @@ Ember.Validator.Results = Ember.ArrayProxy.extend({
    */
   isValid: function() {
     return Em.isEmpty(this.get('errors'));
-  }.property('errors.@each'),
-  
-  /**
-   * Retrieves the error message for given errorKey.
-   * 
-   * @method getMsgFor
-   * @param {String} errorKey
-   * @return {String}
-   */
-  getMsgFor: function(errorKey) {
-    var error = this.getError(errorKey);
-    return error ? error.get('message') : null;
-  },
-  
-  getError: function(errorKey) {
-    return this.get('errors').findBy('errorKey', errorKey);
-  }
+  }.property('errors.@each')
 });
 
 /**
@@ -394,7 +403,7 @@ Ember.Validator.Results = Ember.ArrayProxy.extend({
 Ember.Validator.Support = Ember.Mixin.create({
   init: function() {
     this._super();
-    this.set('validationResults', Em.Validator.Results.create({ content: [] }));
+    this.set('validatorResult', Ember.Validator.Result.create({ content: {} }));
   },
   
   /**
@@ -432,45 +441,59 @@ Ember.Validator.Support = Ember.Mixin.create({
    * 
    * @example Getting the validation
    * ```
-   * var person = App.Person.create({ name: null });
+   * var person = App.Person.create({ name: null, age: 29 });
    * 
    * person.validate().get('isValid') // false;;
    * ```
    * 
    * @example Getting the error message
    * ```
-   * person.validate().getMsgFor('name'); // 'name is required'
+   * person.validate().get('error.name.message'); // 'name is required'
    * ```
    * 
    * Related:
    * {{#crossLink "Validator.Results"}}{{/crossLink}},
    * {{#crossLink "Validator.Support/validations:property"}}{{/crossLink}}
    * 
-   * You can also choose which keys to run validations on by passing an array.
+   * You can also choose which keys to run validations on by passing an array
+   * or comma separated strings.
+   * ```
+   * person.validate('name', 'age');
+   *
+   * // or as an array
+   * var keys = ['name', 'age'];
+   * person.validate(keys);
    * ```
    * 
    * @method validate
    * @param {Array} keys - An array of object keys to validate
-   * @return {Ember.Validator.Results}
+   * @return {Ember.Validator.Result}
    */
-  validate: function(keys) {
+  validate: function() {
     var self = this,
         validations = this.get('validations'),
-        Validator = Ember.Validator;
+        Validator = Ember.Validator,
+        keys;
         
-    // Check if keys are being sent manually in the method before checking 
-    // validations
-    keys = keys ? [keys] : Em.keys(validations);
     Em.assert('You do not have a \'validations\' object defined', validations);
     
-    this.get('validationResults').clear();
+    // Check if keys are being sent as args in the method before checking
+    // validations object.
+    if (arguments.length > 0) {
+      keys = Em.typeOf(arguments[0]) === 'array' ?
+        arguments[0] : Array.prototype.slice.call(arguments);
+    } else {
+      keys = Em.keys(validations);
+    }
+    
+    this.set('validatorResult.content', Ember.Validator.Error.create());
         
     keys.forEach(function(key) {
       var rules = Validator._getRulesForKey(validations, key);
       Validator._generateResult(self, rules, key);
     });
     
-    return this.get('validationResults');
+    return this.get('validatorResult');
   }
 });
 
