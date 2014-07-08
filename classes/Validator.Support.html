@@ -19,7 +19,7 @@
             
         </div>
         <div class="yui3-u-1-4 version">
-            <em>API Docs for: 0.0.1</em>
+            <em>API Docs for: 0.1.0</em>
         </div>
     </div>
     <div id="bd" class="yui3-g">
@@ -43,9 +43,9 @@
             
                 <li><a href="../classes/Ember.Validator.html">Ember.Validator</a></li>
             
-                <li><a href="../classes/Validator.Result.html">Validator.Result</a></li>
+                <li><a href="../classes/Validator.Error.html">Validator.Error</a></li>
             
-                <li><a href="../classes/Validator.Results.html">Validator.Results</a></li>
+                <li><a href="../classes/Validator.Result.html">Validator.Result</a></li>
             
                 <li><a href="../classes/Validator.Rule.html">Validator.Rule</a></li>
             
@@ -102,7 +102,7 @@
 
     
         <div class="foundat">
-            Defined in: <a href="../files/src_ember-validator.js.html#l385"><code>src&#x2F;ember-validator.js:385</code></a>
+            Defined in: <a href="../files/src_ember-validator.js.html#l394"><code>src&#x2F;ember-validator.js:394</code></a>
         </div>
     
 
@@ -206,7 +206,7 @@ method which looks for a validations object.</p>
 
     
         <span class="returns-inline">
-            <span class="type">Ember.Validator.Results</span>
+            <span class="type">Ember.Validator.Result</span>
         </span>
     
 
@@ -233,7 +233,7 @@ method which looks for a validations object.</p>
             
         
         
-        <a href="../files/src_ember-validator.js.html#l429"><code>src&#x2F;ember-validator.js:429</code></a>
+        <a href="../files/src_ember-validator.js.html#l438"><code>src&#x2F;ember-validator.js:438</code></a>
         
         </p>
 
@@ -284,7 +284,7 @@ The method returns a results object.</p>
             <div class="returns-description">
                 
                     
-                        <span class="type">Ember.Validator.Results</span>:
+                        <span class="type">Ember.Validator.Result</span>:
                     
                 
             </div>
@@ -297,16 +297,21 @@ The method returns a results object.</p>
 
             <div class="example-content">
                 <p> Getting the validation</p>
-<pre class="code prettyprint"><code>var person = App.Person.create({ name: null });
+<pre class="code prettyprint"><code>var person = App.Person.create({ name: null, age: 29 });
 
 person.validate().get(&#39;isValid&#39;) // false;;</code></pre>
 <p> Getting the error message</p>
-<pre class="code prettyprint"><code>person.validate().getMsgFor(&#39;name&#39;); // &#39;name is required&#39;</code></pre>
+<pre class="code prettyprint"><code>person.validate().get(&#39;error.name.message&#39;); // &#39;name is required&#39;</code></pre>
 <p>Related:
-<a href="../classes/Validator.Results.html" class="crosslink">Validator.Results</a>,
+Validator.Results,
 <a href="../classes/Validator.Support.html#property_validations" class="crosslink">validations</a></p>
-<p>You can also choose which keys to run validations on by passing an array.
-<code>&#x60;</code></p>
+<p>You can also choose which keys to run validations on by passing an array
+or comma separated strings.</p>
+<pre class="code prettyprint"><code>person.validate(&#39;name&#39;, &#39;age&#39;);
+
+// or as an array
+var keys = [&#39;name&#39;, &#39;age&#39;];
+person.validate(keys);</code></pre>
 
             </div>
         </div>
@@ -345,7 +350,7 @@ person.validate().get(&#39;isValid&#39;) // false;;</code></pre>
             
         
         
-        <a href="../files/src_ember-validator.js.html#l400"><code>src&#x2F;ember-validator.js:400</code></a>
+        <a href="../files/src_ember-validator.js.html#l409"><code>src&#x2F;ember-validator.js:409</code></a>
         
         </p>
 

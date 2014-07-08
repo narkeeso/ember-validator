@@ -2,7 +2,7 @@
     "project": {
         "name": "Ember Validator",
         "description": "Ember Validator a lightweight validation library.",
-        "version": "0.0.1",
+        "version": "0.1.0",
         "url": "https://github.com/narkeeso/ember-validator",
         "logo": "http://i1279.photobucket.com/albums/y523/textcraft/Jun%202014%20-%204/24ca5e6939aae8614e526a8cdc2c82b83bb591f6da39a3ee5e6b4b0d3255bfef95601890afd80709da39a3ee5e6b4b0d3255bfef95601890afd80709c824e6667975219e0101_zps7bc77bf6.png"
     },
@@ -16,8 +16,8 @@
                 "Ember.Validator": 1,
                 "Validator.Rule": 1,
                 "Validator.Rules": 1,
+                "Validator.Error": 1,
                 "Validator.Result": 1,
-                "Validator.Results": 1,
                 "Validator.Support": 1
             },
             "fors": {},
@@ -35,8 +35,8 @@
                 "Ember.Validator": 1,
                 "Validator.Rule": 1,
                 "Validator.Rules": 1,
+                "Validator.Error": 1,
                 "Validator.Result": 1,
-                "Validator.Results": 1,
                 "Validator.Support": 1
             },
             "fors": {},
@@ -46,7 +46,7 @@
             },
             "tag": "main",
             "file": "src/ember-validator.js",
-            "line": 385,
+            "line": 394,
             "itemtype": "main"
         }
     },
@@ -77,7 +77,7 @@
             "module": "Ember.Validator",
             "namespace": "Validator",
             "file": "src/ember-validator.js",
-            "line": 133,
+            "line": 184,
             "description": "The base rule class which stores the validate method and message settings.",
             "is_constructor": 1,
             "extends": "Ember.Object"
@@ -93,9 +93,25 @@
             "module": "Ember.Validator",
             "namespace": "Validator",
             "file": "src/ember-validator.js",
-            "line": 197,
+            "line": 248,
             "description": "A static class used to defined reusable rules. Each property defined on the\nroot of this class are wrapped in Ember.Validator.Rule.\n\nAn example of adding more rules:\n\n```javascript\nEmber.Validator.Rules.reopen({\n  minLength: {\n    min: 6,\n\n    validate: function(value, options) {\n      this.messageFormats = ['Minimum', options.min];\n      return value.split('').length > options.min;\n    },\n    \n    message: '%@2 of %@3 characters required.'\n  }\n});\n```\n\nRelated:\n{{#crossLink \"Validator.Rule\"}}{{/crossLink}},\nhttp://emberjs.com/api/classes/Ember.String.html#method_fmt",
             "static": 1
+        },
+        "Validator.Error": {
+            "name": "Validator.Error",
+            "shortname": "Validator.Error",
+            "classitems": [],
+            "plugins": [],
+            "extensions": [],
+            "plugin_for": [],
+            "extension_for": [],
+            "module": "Ember.Validator",
+            "namespace": "Validator",
+            "file": "src/ember-validator.js",
+            "line": 295,
+            "description": "Validation result object used to store the validation.",
+            "is_constructor": 1,
+            "extends": "Ember.Object"
         },
         "Validator.Result": {
             "name": "Validator.Result",
@@ -108,26 +124,10 @@
             "module": "Ember.Validator",
             "namespace": "Validator",
             "file": "src/ember-validator.js",
-            "line": 244,
-            "description": "Validation result object used to store the validation.",
-            "is_constructor": 1,
-            "extends": "Ember.Object"
-        },
-        "Validator.Results": {
-            "name": "Validator.Results",
-            "shortname": "Validator.Results",
-            "classitems": [],
-            "plugins": [],
-            "extensions": [],
-            "plugin_for": [],
-            "extension_for": [],
-            "module": "Ember.Validator",
-            "namespace": "Validator",
-            "file": "src/ember-validator.js",
-            "line": 332,
+            "line": 337,
             "description": "The array proxy which stores all the validation results",
             "is_constructor": 1,
-            "extends": "Ember.ArrayProxy"
+            "extends": "Ember.ObjectProxy"
         },
         "Validator.Support": {
             "name": "Validator.Support",
@@ -140,7 +140,7 @@
             "module": "Ember.Validator",
             "namespace": "Validator",
             "file": "src/ember-validator.js",
-            "line": 385,
+            "line": 394,
             "description": "Add this mixin to any object to add validation support. Exposes the validate()\nmethod which looks for a validations object.",
             "static": 1,
             "type": "{Ember.Mixin}"
@@ -180,6 +180,63 @@
         {
             "file": "src/ember-validator.js",
             "line": 49,
+            "description": "Creates the error message.",
+            "access": "private",
+            "tagname": "",
+            "itemtype": "method",
+            "name": "_createResultMessage",
+            "params": [
+                {
+                    "name": "errorKey",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "rule",
+                    "description": "",
+                    "type": "Ember.Validator.Rule"
+                }
+            ],
+            "class": "Ember.Validator",
+            "module": "Ember.Validator",
+            "namespace": "Ember"
+        },
+        {
+            "file": "src/ember-validator.js",
+            "line": 66,
+            "description": "Formats the message based on the errorKey and messageFormats.\nThe errorKey is always set as the first argument\n\nRelated:\n{{#crossLink \"Validator.Rule/propertyFormat:property\"}}{{/crossLink}},\n{{#crossLink \"Validator.Rule/messageFormats:property\"}}{{/crossLink}}",
+            "access": "private",
+            "tagname": "",
+            "itemtype": "method",
+            "name": "_formatMessage",
+            "params": [
+                {
+                    "name": "rule",
+                    "description": "",
+                    "type": "Ember.Validator.Rule"
+                },
+                {
+                    "name": "propertyFormat",
+                    "description": "",
+                    "type": "String"
+                },
+                {
+                    "name": "messageFormats",
+                    "description": "",
+                    "type": "Array"
+                }
+            ],
+            "return": {
+                "description": "The formatted string",
+                "type": "String"
+            },
+            "class": "Ember.Validator",
+            "module": "Ember.Validator",
+            "namespace": "Ember"
+        },
+        {
+            "file": "src/ember-validator.js",
+            "line": 94,
             "description": "Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.\nAny custom rules with the same name in {@link Em.Validator.Rules} are merged.",
             "access": "private",
             "tagname": "",
@@ -212,8 +269,8 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 83,
-            "description": "Responsible for running validation rules and appending a result to\nvalidationResults.",
+            "line": 128,
+            "description": "Responsible for running validation rules and adding the error to an\ninstance of Ember.Validator.Error.\n\nResult generation will stop at the first failed validation per key.",
             "access": "private",
             "tagname": "",
             "itemtype": "method",
@@ -241,7 +298,7 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 142,
+            "line": 193,
             "description": "Property used to customize the message formatting",
             "itemtype": "property",
             "name": "messageFormats",
@@ -252,8 +309,8 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 150,
-            "description": "Set this property when you want to customize the message to show something\nother than the default errorKey.\n\nSee: {{#crossLink \"Ember.Validator.Result/errorKey:property\"}}errorKey{{/crossLink}}",
+            "line": 201,
+            "description": "Set this property when you want to customize the message to show something\nother than the default errorKey.\n\nSee: {{#crossLink \"Ember.Validator.Error/errorKey:property\"}}errorKey{{/crossLink}}",
             "itemtype": "property",
             "name": "propertyFormat",
             "type": "string",
@@ -263,10 +320,10 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 161,
+            "line": 212,
             "description": "The property used to display the error message. Can be set to a customized\nmessage with formatting or without.\n\nmessage is formatted like so:",
             "example": [
-                "\n ```\n // %@1: errorKey || propertyFormat\n // %@2+: messageFormats\n\n '%@1 has invalid length, must be %@2 %@3 chars'.fmt(errorKey, messageFormats);\n ```\nerrorKey is defaulted to %@1 and messageFormats are designated for %@2+\n\nRelated: {{#crossLink \"Validator.Result/errorKey:property\"}}{{/crossLink}}"
+                "\n ```\n // %@1: errorKey || propertyFormat\n // %@2+: messageFormats\n\n '%@1 has invalid length, must be %@2 %@3 chars'.fmt(errorKey, messageFormats);\n ```\nerrorKey is defaulted to %@1 and messageFormats are designated for %@2+\n\nRelated: {{#crossLink \"Validator.Error/errorKey:property\"}}{{/crossLink}}"
             ],
             "itemtype": "property",
             "name": "message",
@@ -280,7 +337,7 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 184,
+            "line": 235,
             "description": "Define validations in this method and return the Boolean value.",
             "itemtype": "method",
             "name": "validate",
@@ -306,53 +363,61 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 253,
+            "line": 304,
+            "itemtype": "property",
+            "name": "message",
+            "type": "String",
+            "class": "Validator.Error",
+            "module": "Ember.Validator",
+            "namespace": "Validator"
+        },
+        {
+            "file": "src/ember-validator.js",
+            "line": 310,
             "description": "The object that is running the validation.",
             "itemtype": "property",
             "name": "context",
             "type": "{Object || Ember.Object}",
-            "class": "Validator.Result",
+            "class": "Validator.Error",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 261,
+            "line": 318,
             "itemtype": "property",
             "name": "errorKey",
             "type": "string",
-            "class": "Validator.Result",
+            "class": "Validator.Error",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 267,
+            "line": 324,
             "itemtype": "property",
             "name": "isValid",
             "type": "boolean",
-            "class": "Validator.Result",
+            "class": "Validator.Error",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 273,
+            "line": 330,
             "itemtype": "property",
             "name": "ruleName",
             "type": "string",
-            "class": "Validator.Result",
+            "class": "Validator.Error",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 279,
-            "description": "The object being validated is set when a result is generated",
-            "access": "private",
-            "tagname": "",
+            "line": 346,
+            "description": "All results are set in the content property.",
             "itemtype": "property",
-            "name": "_validator",
+            "name": "content",
             "type": "Object",
             "class": "Validator.Result",
             "module": "Ember.Validator",
@@ -360,100 +425,50 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 288,
-            "description": "Formats the message based on the errorKey and messageFormats.\nThe errorKey is always set as the first argument\n\nRelated:\n{{#crossLink \"Validator.Rule/propertyFormat:property\"}}{{/crossLink}},\n{{#crossLink \"Validator.Rule/messageFormats:property\"}}{{/crossLink}}",
-            "access": "private",
-            "tagname": "",
-            "itemtype": "method",
-            "name": "_formatMessage",
-            "params": [
-                {
-                    "name": "propertyFormat",
-                    "description": "",
-                    "type": "String"
-                },
-                {
-                    "name": "messageFormats",
-                    "description": "",
-                    "type": "Array"
-                }
-            ],
-            "return": {
-                "description": "The formatted string",
-                "type": "String"
-            },
-            "class": "Validator.Result",
-            "module": "Ember.Validator",
-            "namespace": "Validator"
-        },
-        {
-            "file": "src/ember-validator.js",
-            "line": 311,
-            "description": "Computed property that formats the error message. Uses propertyFormat\nand messageFormats for customization.\n\nRelated:\n{{#crossLink \"Validator.Rule/propertyFormat:property\"}}{{/crossLink}},\n{{#crossLink \"Validator.Rule/messageFormats:property\"}}{{/crossLink}}",
+            "line": 354,
             "itemtype": "property",
-            "name": "message",
-            "type": "{String}",
+            "name": "error",
+            "type": "{Object}",
             "class": "Validator.Result",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 341,
+            "line": 360,
+            "description": "An array of all errors that exist in the content property",
+            "itemtype": "property",
+            "name": "errors",
+            "type": "{Array}",
+            "class": "Validator.Result",
+            "module": "Ember.Validator",
+            "namespace": "Validator"
+        },
+        {
+            "file": "src/ember-validator.js",
+            "line": 375,
             "description": "An array of all the error messages generated",
             "itemtype": "property",
             "name": "messages",
             "type": "{Array}",
-            "class": "Validator.Results",
+            "class": "Validator.Result",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 349,
-            "description": "An alias for the content property set on results which stores\nEmber.Validator.Result objects",
-            "itemtype": "property",
-            "name": "errors",
-            "type": "{Array}",
-            "class": "Validator.Results",
-            "module": "Ember.Validator",
-            "namespace": "Validator"
-        },
-        {
-            "file": "src/ember-validator.js",
-            "line": 358,
+            "line": 383,
             "description": "Set to false if any errors were generated in the validation",
             "itemtype": "property",
             "name": "isValid",
             "type": "{Boolean}",
-            "class": "Validator.Results",
+            "class": "Validator.Result",
             "module": "Ember.Validator",
             "namespace": "Validator"
         },
         {
             "file": "src/ember-validator.js",
-            "line": 368,
-            "description": "Retrieves the error message for given errorKey.",
-            "itemtype": "method",
-            "name": "getMsgFor",
-            "params": [
-                {
-                    "name": "errorKey",
-                    "description": "",
-                    "type": "String"
-                }
-            ],
-            "return": {
-                "description": "",
-                "type": "String"
-            },
-            "class": "Validator.Results",
-            "module": "Ember.Validator",
-            "namespace": "Validator"
-        },
-        {
-            "file": "src/ember-validator.js",
-            "line": 400,
+            "line": 409,
             "description": "The property where validations are defined.",
             "example": [
                 "\n```javascript\nApp.Person = Ember.Object.extend(Ember.Validator.Support, {\n name: null,\n phone: null,\n\n validations: {\n   name: {\n     rules: ['required']\n   },\n   phone: {\n      rules: ['required', 'phone']\n      phone: function(value, options) {\n        // run validations\n      }\n   }\n }\n});\n```"
@@ -468,11 +483,11 @@
         },
         {
             "file": "src/ember-validator.js",
-            "line": 429,
+            "line": 438,
             "description": "Runs all validations defined in the validations object and stores results.\nThe method returns a results object.",
             "example": [
-                " Getting the validation\n```\nvar person = App.Person.create({ name: null });\n\nperson.validate().get('isValid') // false;;\n```",
-                " Getting the error message\n```\nperson.validate().getMsgFor('name'); // 'name is required'\n```\n\nRelated:\n{{#crossLink \"Validator.Results\"}}{{/crossLink}},\n{{#crossLink \"Validator.Support/validations:property\"}}{{/crossLink}}\n\nYou can also choose which keys to run validations on by passing an array.\n```"
+                " Getting the validation\n```\nvar person = App.Person.create({ name: null, age: 29 });\n\nperson.validate().get('isValid') // false;;\n```",
+                " Getting the error message\n```\nperson.validate().get('error.name.message'); // 'name is required'\n```\n\nRelated:\n{{#crossLink \"Validator.Results\"}}{{/crossLink}},\n{{#crossLink \"Validator.Support/validations:property\"}}{{/crossLink}}\n\nYou can also choose which keys to run validations on by passing an array\nor comma separated strings.\n```\nperson.validate('name', 'age');\n\n// or as an array\nvar keys = ['name', 'age'];\nperson.validate(keys);\n```"
             ],
             "itemtype": "method",
             "name": "validate",
@@ -485,7 +500,7 @@
             ],
             "return": {
                 "description": "",
-                "type": "Ember.Validator.Results"
+                "type": "Ember.Validator.Result"
             },
             "class": "Validator.Support",
             "module": "Ember.Validator",
