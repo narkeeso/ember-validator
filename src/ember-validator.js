@@ -1,3 +1,5 @@
+/* global Ember */
+
 (function() {
 
 var VERSION = '0.1.0';
@@ -36,12 +38,12 @@ Ember.Validator = Ember.Object.create({
   _getRulesForKey: function(validations, key) {
     var property = validations[key];
 
-    if (Em.typeOf(property) === 'array') {
+    if (Ember.typeOf(property) === 'array') {
       return property;
-    } else if (Em.typeOf(property.rules) === 'array') {
+    } else if (Ember.typeOf(property.rules) === 'array') {
       return property.rules;
     } else {
-      Em.Logger.warn('No valid defined rules found for property \'' + key + '\'');
+      Ember.Logger.warn('No valid defined rules found for property \'' + key + '\'');
       return [];
     }
   },
@@ -82,18 +84,18 @@ Ember.Validator = Ember.Object.create({
     var formats = [],
         message = rule.get('message');
         
-    Em.assert('You must specify an error message for rule name ' + 
+    Ember.assert('You must specify an error message for rule name ' + 
       '(%@)'.fmt(rule.get('name')), message);
 
     formats = formats.concat(messageFormats);
     formats.unshift(propertyFormat);
 
-    return Em.String.fmt(message, formats);
+    return Ember.String.fmt(message, formats);
   },
   
   /**
-   * Looks for a rule object defined as custom or defined in {@link Em.Validator.Rules}.
-   * Any custom rules with the same name in {@link Em.Validator.Rules} are merged.
+   * Looks for a rule object defined as custom or defined in {@link Ember.Validator.Rules}.
+   * Any custom rules with the same name in {@link Ember.Validator.Rules} are merged.
    * 
    * @private
    * @method _getRuleObj
@@ -104,24 +106,24 @@ Ember.Validator = Ember.Object.create({
    */
   _getRuleObj: function(context, key, ruleName) {
     var validations = context.validations,
-        Rules = Em.Validator.Rules,
+        Rules = Ember.Validator.Rules,
         customRule = validations[key][ruleName],
-        builtInRuleCopy = Em.copy(Rules[ruleName]);
+        builtInRuleCopy = Ember.copy(Rules[ruleName]);
 
     if (customRule) {
-      var rule = builtInRuleCopy ? Em.merge(builtInRuleCopy, customRule) : customRule,
+      var rule = builtInRuleCopy ? Ember.merge(builtInRuleCopy, customRule) : customRule,
           hasValidateMethod = typeof rule.validate === 'function';
 
-      Em.assert('Must have validate function defined in custom rule.', 
+      Ember.assert('Must have validate function defined in custom rule.', 
         hasValidateMethod);
         
-      return Em.Validator.Rule.create(rule, { name: ruleName });
+      return Ember.Validator.Rule.create(rule, { name: ruleName });
     }
     
     if (builtInRuleCopy) {
-      return Em.Validator.Rule.create(builtInRuleCopy);
+      return Ember.Validator.Rule.create(builtInRuleCopy);
     } else {
-      Em.assert('No valid rules were found.', false);
+      Ember.assert('No valid rules were found.', false);
     }
   },
   
@@ -140,9 +142,9 @@ Ember.Validator = Ember.Object.create({
   _generateResult: function(context, rules, key) {
     var self = this,
         valueForKey = context.get(key),
-        results = context.get('validatorResult');
+        result = context.get('validatorResult');
 
-    if (Ember.Validator.TRIM_VALUE && Em.typeOf(valueForKey) === 'string') {
+    if (Ember.Validator.TRIM_VALUE && Ember.typeOf(valueForKey) === 'string') {
       var trimmed = valueForKey.trim();
       context.set(key, trimmed);
       valueForKey = trimmed;
@@ -162,9 +164,9 @@ Ember.Validator = Ember.Object.create({
 
         if (!didValidate) {
           var message = self._createResultMessage(key, validator),
-              result = Ember.Validator.Error.create();
+              error = Ember.Validator.Error.create();
               
-          result.setProperties({
+          error.setProperties({
             message: message,
             context: context,
             isValid: false,
@@ -172,7 +174,7 @@ Ember.Validator = Ember.Object.create({
             errorKey: key
           });
           
-          results.set(key, result);
+          result.set(key, error);
           
           return true;
         }
@@ -241,7 +243,7 @@ Ember.Validator.Rule = Ember.Object.extend({
    * @return {Boolean} 
    */
   validate: function() {
-    Em.assert('You must define a validate function for this to be a valid rule', false);
+    Ember.assert('You must define a validate function for this to be a valid rule', false);
   }
 });
 
@@ -277,7 +279,7 @@ Ember.Validator.Rule = Ember.Object.extend({
 Ember.Validator.Rules = Ember.Object.create({
   required: {
     validate: function(value) {
-      return !Em.isEmpty(value);
+      return !Ember.isEmpty(value);
     },
     
     message: '%@1 is required'
@@ -355,7 +357,7 @@ Ember.Validator.Result = Ember.ObjectProxy.extend({
    * @property error
    * @type {Object}
    */
-  error: Em.computed.alias('content'),
+  error: Ember.computed.alias('content'),
   
   /**
    * An array of all errors that exist in the content property
@@ -366,7 +368,7 @@ Ember.Validator.Result = Ember.ObjectProxy.extend({
   errors: function() {
     var content = this.get('content');
     
-    return Em.keys(content).reduce(function(errors, key) {
+    return Ember.keys(content).reduce(function(errors, key) {
       errors.pushObject(content.get(key));
       return errors;
     }, []);
@@ -378,7 +380,7 @@ Ember.Validator.Result = Ember.ObjectProxy.extend({
    * @property messages
    * @type {Array}
    */
-  messages: Em.computed.mapBy('errors', 'message'),
+  messages: Ember.computed.mapBy('errors', 'message'),
   
   /**
    * Set to false if any errors were generated in the validation
@@ -387,7 +389,7 @@ Ember.Validator.Result = Ember.ObjectProxy.extend({
    * @type {Boolean}
    */
   isValid: function() {
-    return Em.isEmpty(this.get('errors'));
+    return Ember.isEmpty(this.get('errors'));
   }.property('errors.@each')
 });
 
@@ -475,15 +477,15 @@ Ember.Validator.Support = Ember.Mixin.create({
         Validator = Ember.Validator,
         keys;
         
-    Em.assert('You do not have a \'validations\' object defined', validations);
+    Ember.assert('You do not have a \'validations\' object defined', validations);
     
     // Check if keys are being sent as args in the method before checking
     // validations object.
     if (arguments.length > 0) {
-      keys = Em.typeOf(arguments[0]) === 'array' ?
+      keys = Ember.typeOf(arguments[0]) === 'array' ?
         arguments[0] : Array.prototype.slice.call(arguments);
     } else {
-      keys = Em.keys(validations);
+      keys = Ember.keys(validations);
     }
     
     this.set('validatorResult.content', Ember.Validator.Error.create());
