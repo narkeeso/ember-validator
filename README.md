@@ -4,7 +4,7 @@ Goal
 ----
 Create a lightweight and flexible validation library that supports complex validations with multiple property dependencies. Ideal for developers that want to write their own validations and choose how to implement how errors are displayed in the view.
 
-###### Disclaimer: currently only tested with Ember 1.5.1
+###### Tested with Ember 1.5.1 - 1.11.1
 
 API Documentation
 -----------------
