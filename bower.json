@@ -1,7 +1,7 @@
 {
   "name": "ember-validator",
   "main": "ember-validator.js",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/narkeeso/ember-validator",
   "authors": [
     "Michael Narciso <narkeeso@gmail.com>"
@@ -23,7 +23,7 @@
     "tests"
   ],
   "dependencies": {
-    "ember": "~1.5.1"
+    "ember": "~1.11.1"
   },
   "devDependencies": {
     "qunit": "~1.14.0"

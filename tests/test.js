@@ -270,7 +270,7 @@ test('Validator.Result instance has access to the object being validated', funct
   equal(result.get('context'), card, 'context matches the original instance');
 });
 
-test('TRIM_VALUE option is trims whitespace before evaluating values', function() {
+test('trim option trims whitespace before evaluating values', function() {
   App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
     validations: {
       name: {
@@ -289,13 +289,12 @@ test('TRIM_VALUE option is trims whitespace before evaluating values', function(
     name: '  Michael  '
   });
   
-  var results = card.validate();
+  var results = card.validate({ trim: true });
   equal(results.get('isValid'), true, 'Should return valid because Michael is 7 characters');
   
   // Make sure it doesn't trim when set to false
-  Em.Validator.reopen({ TRIM_VALUE: false });
   card.set('name', '  Michael  ');
-  results = card.validate();
+  results = card.validate({ trim: false });
   
   equal(results.get('isValid'), false, 'Should return invalid because length is 11 with whitespace');
 });
@@ -317,7 +316,7 @@ test('Support for validating specified keys in the validate() method', function(
     number: 'four'
   });
   
-  var results = card.validate('number');
+  var results = card.validate({ properties: ['number'] });
   
   equal(results.get('errors.length'), 1, 'Should only have 1 error');
   ok(results.get('error.number'), 'Error for number should exist in results.');

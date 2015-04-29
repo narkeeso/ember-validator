@@ -1,6 +1,6 @@
 {
   "name": "ember-validator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A library for validating ember objects",
   "main": "ember-validator.js",
   "directories": {
@@ -14,7 +14,7 @@
     "yuidoc-bootstrap-theme": "^1.0.2"
   },
   "scripts": {
-    "build": "yuidoc ./src --config yuidoc.json",
+    "build:docs": "yuidoc ./src --config yuidoc.json",
     "test": "./node_modules/testem/testem.js -l PhantomJS ci",
     "docserve": "yuidoc ./src --server --config yuidoc.json"
   },
