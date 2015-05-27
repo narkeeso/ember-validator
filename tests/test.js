@@ -13,10 +13,10 @@ test('Validation.Results instance should have it\'s error properties mapped', fu
       }
     }
   });
-  
+
   var card = App.CreditCard.create();
   results = card.validate();
-  
+
   equal(results.get('error.name') instanceof Ember.Validator.Error, true, 'should be an instance of Ember.Validator.Error');
 });
 
@@ -65,27 +65,8 @@ test('Built-in number rule', function() {
   ok(!result, 'balance validation should fail');
 });
 
-test('Only validate undefined properties on required rule', function() {
+test('Properties without required rule and value is undefined or empty string or null) should NOT validate', function() {
   App.CreditCard = Em.Object.extend(Ember.Validator.Support, {
-    validations: {
-      name: {
-        rules: ['required']
-      },
-      number: {
-        rules: ['required']
-      }
-    }
-  });
-
-  // number is undefined
-  var card = App.CreditCard.create({
-    name: 'Michael'
-  });
-
-  var result = card.validate().get('isValid');
-  ok(!result, 'object should not validate because number is required');
-
-  App.CreditCard.reopen({
     validations: {
       name: {
         rules: ['required']
@@ -96,12 +77,13 @@ test('Only validate undefined properties on required rule', function() {
     }
   });
 
-  card = App.CreditCard.create({
-    name: 'Michael'
+  var card = App.CreditCard.create({
+    name: 'Michael',
+    number: ''
   });
 
-  result = card.validate().get('isValid');
-  ok(result, 'object should validate with undefined number');
+  isValid = card.validate().get('isValid');
+  ok(isValid, 'object should be valid with empty number and number rule defined');
 });
 
 test('Supports custom validator rule', function() {
@@ -185,7 +167,7 @@ test('Can retrieve errors by key name', function() {
 
   var results = card.validate(),
       error = results.get('error.name');
-      
+
   ok(error instanceof Em.Validator.Error, 'Error is an instance of Validator.Error');
 });
 
@@ -266,7 +248,7 @@ test('Validator.Result instance has access to the object being validated', funct
 
   var results = card.validate(),
       result = results.get('error.name');
-      
+
   equal(result.get('context'), card, 'context matches the original instance');
 });
 
@@ -284,18 +266,18 @@ test('trim option trims whitespace before evaluating values', function() {
       }
     }
   });
-  
+
   var card = App.CreditCard.create({
     name: '  Michael  '
   });
-  
+
   var results = card.validate({ trim: true });
   equal(results.get('isValid'), true, 'Should return valid because Michael is 7 characters');
-  
+
   // Make sure it doesn't trim when set to false
   card.set('name', '  Michael  ');
   results = card.validate({ trim: false });
-  
+
   equal(results.get('isValid'), false, 'Should return invalid because length is 11 with whitespace');
 });
 
@@ -310,21 +292,21 @@ test('Support for validating specified keys in the validate() method', function(
       }
     }
   });
-  
+
   var card = App.CreditCard.create({
     name: null,
     number: 'four'
   });
-  
+
   var results = card.validate({ properties: ['number'] });
-  
+
   equal(results.get('errors.length'), 1, 'Should only have 1 error');
   ok(results.get('error.number'), 'Error for number should exist in results.');
-  
+
   // Test sending arrays
   results = card.validate(['name', 'number']);
   equal(results.get('errors.length'), 2, 'Should have 2 errors');
-  
+
   // Test sending comma delimited
   results = card.validate('name', 'number');
   equal(results.get('errors.length'), 2, 'Should have 2 errors');

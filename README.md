@@ -2,9 +2,9 @@
 
 Goal
 ----
-Create a lightweight and flexible validation library that supports complex validations with multiple property dependencies. Ideal for developers that want to write their own validations and choose how to implement how errors are displayed in the view.
+Create a lightweight and flexible validation library that supports complex validations with multiple property dependencies. Ideal for developers that want to write their own validations and choose how to implement displaying of error messages.
 
-###### Tested with Ember 1.5.1 - 1.11.1
+###### Tested with Ember 1.11+
 
 API Documentation
 -----------------
@@ -39,7 +39,7 @@ creditCard.set('number', '4111111111111111');
 creditCard.validate().get('isValid'); // true
 ```
 
-Add Ember.Validator.Support to any Ember.Object and create a validations with properties to validate and an array of rules defined as strings.
+Add Ember.Validator.Support to any Ember.Object and create validations with properties to validate and an array of rules defined as strings.
 
 ### Custom Validation
 
